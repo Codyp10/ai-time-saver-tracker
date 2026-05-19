@@ -1,0 +1,52 @@
+[
+  {
+    "id": "conv-1",
+    "title": "Debug my React component",
+    "create_time": 1704067200,
+    "update_time": 1704067500,
+    "mapping": {
+      "root": {
+        "id": "root",
+        "message": null,
+        "children": ["u1"]
+      },
+      "u1": {
+        "id": "u1",
+        "parent": "root",
+        "children": ["a1"],
+        "message": {
+          "id": "msg-u1",
+          "author": { "role": "user" },
+          "create_time": 1704067200,
+          "content": { "parts": ["Can you help me debug this React hook?"] },
+          "metadata": {}
+        }
+      },
+      "a1": {
+        "id": "a1",
+        "parent": "u1",
+        "children": [],
+        "message": {
+          "id": "msg-a1",
+          "author": { "role": "assistant" },
+          "create_time": 1704067260,
+          "content": {
+            "parts": [
+              "Sure. The issue is likely a missing dependency array in useEffect. Here is the corrected code with explanation spanning multiple sentences for word count."
+            ]
+          },
+          "metadata": { "model_slug": "gpt-4o" }
+        }
+      },
+      "bad": {
+        "id": "bad",
+        "message": {
+          "id": "msg-bad",
+          "author": { "role": "user" },
+          "create_time": 0,
+          "content": { "parts": ["Should be skipped"] }
+        }
+      }
+    }
+  }
+]
