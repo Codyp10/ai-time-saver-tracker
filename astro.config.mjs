@@ -8,7 +8,7 @@ import { fileURLToPath } from "url";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
-  site: "https://ai-time-saver-tracker.vercel.app",
+  site: "https://theaiwrapped.com",
   integrations: [
     react(),
     sitemap({

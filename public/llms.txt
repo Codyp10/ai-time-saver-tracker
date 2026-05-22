@@ -28,7 +28,7 @@ AI Wrapped parses AI chat export files locally in the user's browser and generat
 
 ## Pages
 
-- [Home](https://ai-time-saver-tracker.vercel.app/): Upload exports and generate a wrap
-- [History](https://ai-time-saver-tracker.vercel.app/history): View past wraps stored locally
-- [Methodology](https://ai-time-saver-tracker.vercel.app/methodology): How time-saved estimates are calculated
-- [Settings](https://ai-time-saver-tracker.vercel.app/settings): Configure preferences
+- [Home](https://theaiwrapped.com/): Upload exports and generate a wrap
+- [History](https://theaiwrapped.com/history): View past wraps stored locally
+- [Methodology](https://theaiwrapped.com/methodology): How time-saved estimates are calculated
+- [Settings](https://theaiwrapped.com/settings): Configure preferences
