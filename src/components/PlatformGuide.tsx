@@ -73,11 +73,7 @@ export function PlatformGuide() {
               <button
                 type="button"
                 onClick={() => setOpen(isOpen ? null : g.platform)}
-                className={`w-full bg-surface-800/30 border rounded-xl p-6 flex justify-between items-center group cursor-pointer transition-all text-left ${
-                  g.highlight
-                    ? "border-wrap-500/40 hover:border-wrap-500/60"
-                    : "border-white/10 hover:border-wrap-500/50"
-                }`}
+                className="w-full bg-surface-800/30 border border-white/10 rounded-xl p-6 flex justify-between items-center group cursor-pointer transition-all text-left hover:border-wrap-500/50"
               >
                 <span className="text-lg font-medium">{g.platform}</span>
                 <span
