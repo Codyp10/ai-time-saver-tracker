@@ -1,6 +1,6 @@
-# AI Time Saver Tracker
+# AI Wrapped
 
-Privacy-first monthly wrap of your AI usage. Upload export ZIPs from **ChatGPT**, **Claude**, **Grok**, or **Gemini (Google Takeout)** and get estimated time spent and time saved — computed entirely in your browser.
+Privacy-first monthly wrap of your AI usage. Upload export files from **ChatGPT**, **Claude**, **Grok**, **Gemini (Google Takeout)**, **Claude Code**, or **Cursor** and get estimated time spent and time saved — computed entirely in your browser.
 
 ## Privacy
 
@@ -9,7 +9,7 @@ Privacy-first monthly wrap of your AI usage. Upload export ZIPs from **ChatGPT**
 - Reports are stored in **IndexedDB** on your device only.
 - Optional OpenAI API key (for better classification) stays in local storage and calls OpenAI directly from your browser if you enable it.
 
-## Supported platforms (v1)
+## Supported platforms
 
 | Platform | Export |
 |----------|--------|
@@ -17,6 +17,8 @@ Privacy-first monthly wrap of your AI usage. Upload export ZIPs from **ChatGPT**
 | Claude | Settings → Privacy → Export data |
 | Grok | [accounts.x.ai/data](https://accounts.x.ai/data) |
 | Gemini | Google Takeout → **My Activity → Gemini Apps** (not top-level Gemini) |
+| Claude Code | Local `.jsonl` session files (`~/.claude/projects/…`) |
+| Cursor | Local `.db` / `.vscdb` chat databases |
 
 See in-app export guides for step-by-step instructions.
 
@@ -46,9 +48,8 @@ npm run build
 
 `vercel.json` includes SPA rewrites for client-side routing.
 
-## Out of scope (v1)
+## Out of scope
 
-- Cursor / Claude Code (local files — planned for v2)
 - GitHub Copilot, Perplexity, Microsoft Copilot, Poe
 - Server accounts or team dashboards
 

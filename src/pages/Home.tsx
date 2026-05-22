@@ -3,13 +3,20 @@ import { useNavigate } from "react-router-dom";
 import { UploadZone } from "@/components/UploadZone";
 import { PlatformGuide } from "@/components/PlatformGuide";
 import { SkillQuiz } from "@/components/SkillQuiz";
+import { OccupationPrompt } from "@/components/OccupationPrompt";
 import { parseUploadFile, filterConversationsByMonth, userFacingError } from "@/parsers";
-import type { NormalizedConversation, SkillLevel } from "@/types/conversation";
+import type { NormalizedConversation, QuizProfile, SkillLevel } from "@/types/conversation";
 import { formatMonthLabel, getPreviousMonth, monthKey } from "@/utils/month";
 import { buildMonthlyReport } from "@/engine/aggregate";
-import { getReport, getSettings, saveReport } from "@/storage/db";
+import { defaultQuizProfile } from "@/engine/quizProfile";
+import { getReport, getSettings, saveReport, saveSettings } from "@/storage/db";
+import { brand } from "@/config/brand";
 
-type Step = "upload" | "quiz" | "processing";
+type Step = "upload" | "occupation" | "quiz" | "processing";
+
+function needsOccupationSetup(occupation: string | undefined): boolean {
+  return occupation === undefined;
+}
 
 export function Home() {
   const navigate = useNavigate();
@@ -63,7 +70,9 @@ export function Home() {
 
       setParsed(all);
       setPlatforms([...new Set(detected)]);
-      setStep("quiz");
+
+      const settings = await getSettings();
+      setStep(needsOccupationSetup(settings.occupation) ? "occupation" : "quiz");
     } catch (err) {
       setError(userFacingError(err));
     } finally {
@@ -71,7 +80,13 @@ export function Home() {
     }
   }
 
-  async function finishReport(skillLevel: SkillLevel) {
+  async function handleOccupationSelect(occupationId: string) {
+    const settings = await getSettings();
+    await saveSettings({ ...settings, occupation: occupationId });
+    setStep("quiz");
+  }
+
+  async function finishReport(quizProfile: QuizProfile) {
     setStep("processing");
     setLoading(true);
     setError(null);
@@ -94,14 +109,15 @@ export function Home() {
       const report = await buildMonthlyReport(
         parsed,
         key,
-        skillLevel,
+        quizProfile,
         settings.openaiApiKey,
       );
       await saveReport(report);
       navigate(`/report/${report.monthKey}`);
     } catch (err) {
       setError(userFacingError(err));
-      setStep("quiz");
+      const settings = await getSettings();
+      setStep(needsOccupationSetup(settings.occupation) ? "occupation" : "quiz");
     } finally {
       setLoading(false);
     }
@@ -111,11 +127,10 @@ export function Home() {
     <div className="space-y-10">
       <section className="text-center space-y-3 max-w-2xl mx-auto">
         <h1 className="text-4xl sm:text-5xl font-black text-white tracking-tight">
-          Your AI month, wrapped
+          {brand.heroHeadline}
         </h1>
         <p className="text-slate-400">
-          Upload export ZIPs from ChatGPT, Claude, Grok, Gemini, Claude Code, or Cursor.
-          Get estimated time spent and time saved — computed entirely in your browser.
+          {brand.heroSubcopy}
         </p>
       </section>
 
@@ -172,6 +187,16 @@ export function Home() {
         </>
       )}
 
+      {step === "occupation" && (
+        <>
+          <p className="text-center text-slate-300">
+            Found <strong className="text-white">{parsed.length}</strong> conversations
+            from {platforms.join(", ")} for {month}/{year}.
+          </p>
+          <OccupationPrompt onSelect={handleOccupationSelect} />
+        </>
+      )}
+
       {step === "quiz" && (
         <>
           <p className="text-center text-slate-300">
@@ -181,7 +206,13 @@ export function Home() {
           <SkillQuiz
             defaultSkillLevel={defaultSkillLevel}
             onComplete={finishReport}
-            onSkip={() => finishReport(defaultSkillLevel)}
+            onSkip={async () => {
+              const settings = await getSettings();
+              finishReport(
+                settings.defaultQuizProfile ??
+                  defaultQuizProfile(settings.skillLevel ?? defaultSkillLevel),
+              );
+            }}
           />
           {error && (
             <p className="text-center text-red-400">{error}</p>
@@ -191,7 +222,7 @@ export function Home() {
 
       {step === "processing" && (
         <p className="text-center text-brand-400 text-lg animate-pulse">
-          Building your wrap…
+          {brand.processingMessage}
         </p>
       )}
     </div>

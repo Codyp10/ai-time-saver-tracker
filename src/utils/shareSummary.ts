@@ -1,6 +1,7 @@
 import { formatHours, topCategory } from "@/engine/aggregate";
 import type { MonthlyReport } from "@/types/conversation";
 import { formatMonthLabel } from "@/utils/month";
+import { brand } from "@/config/brand";
 
 const PLATFORM_LABELS: Record<string, string> = {
   chatgpt: "ChatGPT",
@@ -21,7 +22,7 @@ export function buildShareSummary(report: MonthlyReport): string {
     .map(([p]) => PLATFORM_LABELS[p] ?? p)
     .join(" + ");
 
-  return `My AI wrap for ${month}: ~${saved} saved across ${totals.conversationCount} conversations${platforms ? ` (${platforms})` : ""}. Top task: ${top}.`;
+  return `${brand.sharePrefix} ${month}: ~${saved} saved across ${totals.conversationCount} conversations${platforms ? ` (${platforms})` : ""}. Top task: ${top}. ${brand.shareHashtag}`;
 }
 
 export function downloadReportJson(report: MonthlyReport, json: string): void {

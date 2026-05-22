@@ -22,6 +22,23 @@ export type SkillLevel =
   | "expert"
   | "expert_mature_code";
 
+export type PrimaryUse = "writing" | "coding" | "research" | "mixed";
+export type MatureCodebase = "yes" | "sometimes" | "rarely" | "na";
+export type ReplacementRatio = "most" | "half" | "new";
+export type VerificationHabit = "always" | "sometimes" | "rarely";
+export type WorkContext = "work" | "both" | "personal";
+export type OutputUsage = "as-is" | "edit" | "draft";
+
+export interface QuizProfile {
+  skillLevel: SkillLevel;
+  primaryUse: PrimaryUse;
+  matureCodebase: MatureCodebase;
+  replacementRatio: ReplacementRatio;
+  verification: VerificationHabit;
+  workContext: WorkContext;
+  outputUsage: OutputUsage;
+}
+
 export interface NormalizedMessage {
   id: string;
   role: MessageRole;
@@ -54,6 +71,7 @@ export interface MonthlyReport {
   monthKey: string;
   createdAt: string;
   skillLevel: SkillLevel;
+  quizProfile?: QuizProfile;
   conversations: NormalizedConversation[];
   analyses: ConversationAnalysis[];
   totals: {
@@ -76,4 +94,5 @@ export interface UserSettings {
   occupation?: string;
   hourlyRate?: number;
   skillLevel?: SkillLevel;
+  defaultQuizProfile?: QuizProfile;
 }

@@ -1,7 +1,7 @@
 import type { MonthlyReport } from "@/types/conversation";
 import { formatHours, HOURS_PER_BOOK, topCategory } from "@/engine/aggregate";
 import { TASK_TABLE } from "@/engine/taskTable";
-import { formatHourLabel } from "@/utils/month";
+import { formatHourLabel, formatMonthLabel } from "@/utils/month";
 import { minutesToDollars, resolveHourlyRate } from "@/engine/value";
 
 const PLATFORM_LABELS: Record<string, string> = {
@@ -92,37 +92,37 @@ export function WrappedReport({ report, hourlyRate, occupationId }: WrappedRepor
       title: "Estimated active time with AI",
       value: formatHours(totals.minutesSpent),
       sub: "From message timestamps, not provider logs",
-      className: "gradient-card",
+      className: "surface-card",
     },
     {
       title: "Estimated time saved",
       value: formatHours(totals.minutesSaved),
       sub: `Range: ${formatHours(totals.minutesSavedLow)} – ${formatHours(totals.minutesSavedHigh)}`,
-      className: "gradient-card-alt",
+      className: "surface-card-alt",
     },
     {
       title: "Top task type",
       value: top.replace("_", " "),
       sub: topStudy,
-      className: "gradient-card",
+      className: "surface-card",
     },
     {
       title: "Busiest hour",
       value: formatHourLabel(totals.busiestHour),
       sub: `Most active day: ${totals.busiestDay}`,
-      className: "gradient-card-alt",
+      className: "surface-card-alt",
     },
     {
       title: "Conversations analyzed",
       value: String(totals.conversationCount),
       sub: `Across ${Object.values(totals.byPlatform).filter((v) => v > 0).length} platform(s)`,
-      className: "gradient-card",
+      className: "surface-card",
     },
     {
       title: "That's like reading",
       value: `${books} books`,
       sub: `At ~${HOURS_PER_BOOK} hrs per book (optional delight metric)`,
-      className: "gradient-card-alt",
+      className: "surface-card-alt",
     },
   ];
 
@@ -130,13 +130,16 @@ export function WrappedReport({ report, hourlyRate, occupationId }: WrappedRepor
     <section className="space-y-8 print-report">
       <header className="text-center space-y-2">
         <p className="text-brand-400 text-sm uppercase tracking-widest font-medium">
-          Your monthly wrap
+          {formatMonthLabel(report.monthKey)} Wrapped
         </p>
         <h1 className="text-4xl sm:text-5xl font-black text-white">
           {formatHours(totals.minutesSaved)} saved
         </h1>
         <p className="text-slate-400">
           ≈ ${dollars.toLocaleString()} at ${rate}/hr · Skill: {report.skillLevel.replace("_", " ")}
+          {report.quizProfile && (
+            <> · {report.quizProfile.primaryUse} focus</>
+          )}
         </p>
       </header>
 

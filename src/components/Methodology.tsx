@@ -50,6 +50,37 @@ export function MethodologyContent() {
       </section>
 
       <section className="space-y-4">
+        <h2 className="text-xl font-semibold text-white">Calibration quiz</h2>
+        <p className="text-slate-300 text-sm leading-relaxed">
+          Before your wrap, eight questions calibrate estimates to your profile.
+          They adjust a base skill multiplier with modifiers for primary use,
+          replacement vs augmentation, verification habits, work context, and
+          coding-on-mature-codebase (METR 2025).
+        </p>
+        <ul className="text-slate-300 text-sm space-y-2 list-disc list-inside">
+          <li>
+            <strong className="text-white">Replacement ratio:</strong> mostly
+            replacing existing work (×1.0) vs mostly new tasks you wouldn&apos;t
+            attempt (×0.55).
+          </li>
+          <li>
+            <strong className="text-white">Verification:</strong> careful review
+            adds time back (×0.9 always) vs rarely checking (×1.03, wider
+            confidence band).
+          </li>
+          <li>
+            <strong className="text-white">Primary use alignment:</strong> savings
+            boost when conversation category matches your stated primary use.
+          </li>
+          <li>
+            <strong className="text-white">Mature codebase:</strong> extra
+            downward adjustment on coding conversations when you work on familiar
+            repos as an expert.
+          </li>
+        </ul>
+      </section>
+
+      <section className="space-y-4">
         <h2 className="text-xl font-semibold text-white">Skill multipliers</h2>
         <ul className="text-slate-300 text-sm space-y-1">
           {Object.entries(SKILL_MULT).map(([level, mult]) => (

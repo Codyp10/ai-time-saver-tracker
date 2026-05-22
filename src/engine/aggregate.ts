@@ -3,10 +3,11 @@ import type {
   MonthlyReport,
   NormalizedConversation,
   Platform,
-  SkillLevel,
+  QuizProfile,
   TaskCategory,
 } from "@/types/conversation";
 import { classifyConversation, classifyWithLlm } from "./classify";
+import { confidenceBandForProfile } from "./quizProfile";
 import { CONFIDENCE_BAND_DEFAULT, CONFIDENCE_BAND_REGEX, TASK_TABLE } from "./taskTable";
 import { estimateConversationMinutes } from "./timeSpent";
 import { assistantWordCount, estimateMinutesSaved } from "./timeSaved";
@@ -31,7 +32,7 @@ const ALL_PLATFORMS: Platform[] = ["chatgpt", "claude", "grok", "gemini", "curso
 export async function buildMonthlyReport(
   conversations: NormalizedConversation[],
   monthKey: string,
-  skillLevel: SkillLevel,
+  quizProfile: QuizProfile,
   openaiApiKey?: string,
 ): Promise<MonthlyReport> {
   const analyses: ConversationAnalysis[] = [];
@@ -43,7 +44,7 @@ export async function buildMonthlyReport(
     if (base.confidence === "low") {
       lowConfidence.push(conv);
     } else {
-      analyses.push(analyzeOne(conv, base.category, "high", skillLevel));
+      analyses.push(analyzeOne(conv, base.category, "high", quizProfile));
     }
   }
 
@@ -53,31 +54,32 @@ export async function buildMonthlyReport(
     for (const conv of batch) {
       try {
         const result = await classifyWithLlm(conv, openaiApiKey);
-        analyses.push(analyzeOne(conv, result.category, result.confidence, skillLevel));
+        analyses.push(analyzeOne(conv, result.category, result.confidence, quizProfile));
       } catch {
         const fallback = classifyConversation(conv);
         analyses.push(
-          analyzeOne(conv, fallback.category, "low", skillLevel),
+          analyzeOne(conv, fallback.category, "low", quizProfile),
         );
       }
     }
     for (const conv of lowConfidence.slice(100)) {
       const fallback = classifyConversation(conv);
-      analyses.push(analyzeOne(conv, fallback.category, "low", skillLevel));
+      analyses.push(analyzeOne(conv, fallback.category, "low", quizProfile));
     }
   } else {
     for (const conv of lowConfidence) {
       const fallback = classifyConversation(conv);
-      analyses.push(analyzeOne(conv, fallback.category, "low", skillLevel));
+      analyses.push(analyzeOne(conv, fallback.category, "low", quizProfile));
     }
   }
 
   const minutesSpent = analyses.reduce((s, a) => s + a.minutesSpent, 0);
   const minutesSaved = analyses.reduce((s, a) => s + a.minutesSaved, 0);
-  const band =
+  const baseBand =
     usedLlm || lowConfidence.length === 0
       ? CONFIDENCE_BAND_DEFAULT
       : CONFIDENCE_BAND_REGEX;
+  const band = confidenceBandForProfile(quizProfile, baseBand);
 
   const byPlatform = emptyPlatformRecord();
   const byCategory = emptyCategoryRecord();
@@ -121,7 +123,8 @@ export async function buildMonthlyReport(
     id: crypto.randomUUID(),
     monthKey,
     createdAt: new Date().toISOString(),
-    skillLevel,
+    skillLevel: quizProfile.skillLevel,
+    quizProfile,
     conversations,
     analyses,
     totals: {
@@ -144,7 +147,7 @@ function analyzeOne(
   conv: NormalizedConversation,
   category: TaskCategory,
   confidence: "high" | "low",
-  skillLevel: SkillLevel,
+  quizProfile: QuizProfile,
 ): ConversationAnalysis {
   return {
     conversation: conv,
@@ -152,7 +155,7 @@ function analyzeOne(
     classificationConfidence: confidence,
     study: TASK_TABLE[category].study,
     minutesSpent: estimateConversationMinutes(conv),
-    minutesSaved: estimateMinutesSaved(conv, category, skillLevel),
+    minutesSaved: estimateMinutesSaved(conv, category, quizProfile),
     assistantWords: assistantWordCount(conv),
   };
 }

@@ -1,12 +1,13 @@
 import type {
   NormalizedConversation,
+  QuizProfile,
   SkillLevel,
   TaskCategory,
 } from "@/types/conversation";
 import { countWords } from "@/parsers/utils";
+import { estimateQuizMultiplier, profileFromSkillLevel } from "./quizProfile";
 import {
   MAX_SAVED_PER_CONVERSATION,
-  SKILL_MULT,
   TASK_TABLE,
 } from "./taskTable";
 
@@ -38,12 +39,16 @@ export function sessionWeight(assistantWords: number): number {
 export function estimateMinutesSaved(
   conv: NormalizedConversation,
   category: TaskCategory,
-  skillLevel: SkillLevel,
+  profileOrSkill: QuizProfile | SkillLevel,
 ): number {
+  const profile =
+    typeof profileOrSkill === "string"
+      ? profileFromSkillLevel(profileOrSkill)
+      : profileOrSkill;
   const config = TASK_TABLE[category];
   const words = assistantWordCount(conv);
   const weight = sessionWeight(words);
-  const skillMult = SKILL_MULT[skillLevel];
+  const skillMult = estimateQuizMultiplier(profile, category);
 
   let baseline: number;
   if (category === "meeting_notes" && config.baselineMinPerMeeting) {

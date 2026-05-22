@@ -53,7 +53,7 @@ function TrendsChart({ reports }: { reports: MonthlyReport[] }) {
               </span>
               <div className="w-full flex items-end justify-center h-24">
                 <div
-                  className="w-full max-w-10 rounded-t-md bg-gradient-to-t from-brand-700 to-brand-400"
+                  className="w-full max-w-10 rounded-t-md bg-brand-600"
                   style={{ height: `${Math.max(pct, 4)}%` }}
                   title={`${formatMonthLabel(r.monthKey)}: ${formatHours(r.totals.minutesSaved)} saved`}
                 />
