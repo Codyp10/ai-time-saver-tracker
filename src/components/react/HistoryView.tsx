@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
 import type { MonthlyReport } from "@/types/conversation";
 import {
   deleteReport,
@@ -36,7 +35,7 @@ function TrendsChart({ reports }: { reports: MonthlyReport[] }) {
         <h2 className="font-semibold text-white">Trends</h2>
         <p className="text-sm text-slate-400">
           Best month:{" "}
-          <span className="text-brand-400">
+          <span className="text-wrap-500">
             {formatMonthLabel(best.monthKey)} ({formatHours(best.totals.minutesSaved)})
           </span>
         </p>
@@ -53,7 +52,7 @@ function TrendsChart({ reports }: { reports: MonthlyReport[] }) {
               </span>
               <div className="w-full flex items-end justify-center h-24">
                 <div
-                  className="w-full max-w-10 rounded-t-md bg-brand-600"
+                  className="w-full max-w-10 rounded-t-md bg-wrap-600"
                   style={{ height: `${Math.max(pct, 4)}%` }}
                   title={`${formatMonthLabel(r.monthKey)}: ${formatHours(r.totals.minutesSaved)} saved`}
                 />
@@ -76,7 +75,7 @@ function TrendsChart({ reports }: { reports: MonthlyReport[] }) {
                 {platforms.map(([p, mins]) => (
                   <div
                     key={p}
-                    className="h-full bg-brand-500/80 first:rounded-l-full last:rounded-r-full"
+                    className="h-full bg-wrap-500/80 first:rounded-l-full last:rounded-r-full"
                     style={{ width: `${(mins / total) * 100}%` }}
                     title={`${PLATFORM_LABELS[p] ?? p}: ${formatHours(mins)}`}
                   />
@@ -90,7 +89,7 @@ function TrendsChart({ reports }: { reports: MonthlyReport[] }) {
   );
 }
 
-export function History() {
+export default function HistoryView() {
   const [reports, setReports] = useState<MonthlyReport[]>([]);
   const [importError, setImportError] = useState<string | null>(null);
   const [importSuccess, setImportSuccess] = useState<string | null>(null);
@@ -174,9 +173,9 @@ export function History() {
       {reports.length === 0 ? (
         <p className="text-slate-400">
           No saved reports yet.{" "}
-          <Link to="/" className="text-brand-400 hover:underline">
+          <a href="/" className="text-wrap-500 hover:underline">
             Upload your first wrap
-          </Link>
+          </a>
         </p>
       ) : (
         <ul className="space-y-3">
@@ -186,22 +185,22 @@ export function History() {
               className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-white/10 bg-white/5 px-4 py-4"
             >
               <div>
-                <Link
-                  to={`/report/${r.monthKey}`}
-                  className="text-lg font-semibold text-white hover:text-brand-400"
+                <a
+                  href={`/report/${r.monthKey}`}
+                  className="text-lg font-semibold text-white hover:text-wrap-500"
                 >
                   {formatMonthLabel(r.monthKey)}
-                </Link>
+                </a>
                 <p className="text-slate-400 text-sm mt-1">
-                  {formatHours(r.totals.minutesSaved)} saved ·{" "}
-                  {r.totals.conversationCount} conversations
+                  {formatHours(r.totals.minutesSaved)} saved · {r.totals.conversationCount}{" "}
+                  conversations
                 </p>
               </div>
               <div className="flex gap-3">
                 <button
                   type="button"
                   onClick={() => handleExport(r)}
-                  className="text-sm text-brand-400 hover:text-brand-300"
+                  className="text-sm text-wrap-500 hover:text-wrap-400"
                 >
                   Export
                 </button>

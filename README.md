@@ -2,6 +2,8 @@
 
 Privacy-first monthly wrap of your AI usage. Upload export files from **ChatGPT**, **Claude**, **Grok**, **Gemini (Google Takeout)**, **Claude Code**, or **Cursor** and get estimated time spent and time saved — computed entirely in your browser.
 
+Built with [Astro](https://astro.build/) for HTML-first pages. Marketing content, methodology, and export guides ship as static HTML. Upload, quiz, reports, and settings hydrate as React islands in the browser.
+
 ## Privacy
 
 - **No backend.** Your chat exports are never uploaded to any server.
@@ -45,8 +47,6 @@ Static build — deploy `dist/` to Vercel, Netlify, or any static host:
 ```bash
 npm run build
 ```
-
-`vercel.json` includes SPA rewrites for client-side routing.
 
 ## Out of scope
 

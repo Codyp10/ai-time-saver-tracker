@@ -3,7 +3,7 @@ import type { SkillLevel, UserSettings } from "@/types/conversation";
 import { getSettings, saveSettings } from "@/storage/db";
 import { OCCUPATIONS } from "@/engine/value";
 
-export function Settings() {
+export default function SettingsView() {
   const [settings, setSettings] = useState<UserSettings>({});
   const [saved, setSaved] = useState(false);
 
@@ -27,8 +27,8 @@ export function Settings() {
             OpenAI API key (optional)
           </label>
           <p className="text-xs text-slate-500">
-            Used only in your browser to classify ambiguous conversations with
-            gpt-4o-mini. Never sent to our servers — we have no servers.
+            Used only in your browser to classify ambiguous conversations with gpt-4o-mini. Never
+            sent to our servers — we have no servers.
           </p>
           <input
             type="password"
@@ -48,9 +48,7 @@ export function Settings() {
           </label>
           <select
             value={settings.occupation ?? "other"}
-            onChange={(e) =>
-              setSettings((s) => ({ ...s, occupation: e.target.value }))
-            }
+            onChange={(e) => setSettings((s) => ({ ...s, occupation: e.target.value }))}
             className="w-full bg-surface-800 border border-white/10 rounded-lg px-3 py-2 text-white"
           >
             {OCCUPATIONS.map((o) => (
@@ -80,9 +78,7 @@ export function Settings() {
         </fieldset>
 
         <fieldset className="space-y-2">
-          <label className="block text-sm font-medium text-slate-200">
-            Default skill level
-          </label>
+          <label className="block text-sm font-medium text-slate-200">Default skill level</label>
           <select
             value={settings.skillLevel ?? "intermediate"}
             onChange={(e) =>
@@ -102,7 +98,7 @@ export function Settings() {
 
         <button
           type="submit"
-          className="px-6 py-2.5 rounded-full bg-brand-600 hover:bg-brand-500 text-white font-medium"
+          className="px-6 py-2.5 rounded-full bg-wrap-600 hover:bg-wrap-500 text-black font-medium"
         >
           Save settings
         </button>

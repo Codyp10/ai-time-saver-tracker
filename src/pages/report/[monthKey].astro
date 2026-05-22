@@ -1,0 +1,32 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import ReportView from "@/components/react/ReportView";
+import { brand } from "@/config/brand";
+
+export function getStaticPaths() {
+  const paths = [];
+  const currentYear = new Date().getFullYear();
+
+  for (let year = currentYear - 2; year <= currentYear + 1; year++) {
+    for (let month = 1; month <= 12; month++) {
+      paths.push({
+        params: {
+          monthKey: `${year}-${String(month).padStart(2, "0")}`,
+        },
+      });
+    }
+  }
+
+  return paths;
+}
+
+const { monthKey } = Astro.params;
+
+if (!monthKey) {
+  throw new Error("Missing month key");
+}
+---
+
+<BaseLayout title={`Report — ${brand.name}`}>
+  <ReportView client:load monthKey={monthKey} />
+</BaseLayout>

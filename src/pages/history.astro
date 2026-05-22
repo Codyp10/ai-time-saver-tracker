@@ -1,0 +1,9 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import HistoryView from "@/components/react/HistoryView";
+import { brand } from "@/config/brand";
+---
+
+<BaseLayout title={`History — ${brand.name}`}>
+  <HistoryView client:load />
+</BaseLayout>

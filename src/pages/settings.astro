@@ -1,0 +1,9 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import SettingsView from "@/components/react/SettingsView";
+import { brand } from "@/config/brand";
+---
+
+<BaseLayout title={`Settings — ${brand.name}`}>
+  <SettingsView client:load />
+</BaseLayout>
