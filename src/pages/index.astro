@@ -1,6 +1,8 @@
 ---
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import PlatformGuide from "@/components/PlatformGuide.astro";
+import SponsorSlot from "@/components/react/SponsorSlot";
+import SupportProject from "@/components/SupportProject.astro";
 import HomeUpload from "@/components/react/HomeUpload";
 import { brand } from "@/config/brand";
 
@@ -98,6 +100,8 @@ const jsonLd = {
       <HomeUpload client:load />
     </section>
 
+    <SponsorSlot client:load />
+
     <section class="max-w-3xl mx-auto mt-12 sm:mt-20 pt-12 sm:pt-20 border-t border-white/5">
       <ul class="space-y-6 text-text-muted mb-12">
         {
@@ -123,5 +127,7 @@ const jsonLd = {
     </section>
 
     <PlatformGuide />
+
+    <SupportProject />
   </div>
 </BaseLayout>

@@ -36,4 +36,21 @@ export const brand = {
   processingMessage: "Wrapping your month…",
   footerPrivacy: "Built for privacy.",
   url: "",
+  sponsor: {
+    enabled: true,
+    label: "Sponsor",
+    headline: "Get your business featured here",
+    subcopy:
+      "Reach privacy-minded AI users every month. This spot is open for sponsorship.",
+    ctaLabel: "Get in touch",
+    ctaHref: "/contact",
+    icon: "campaign",
+    inquiryEmail: "codyp10@gmail.com",
+  },
+  support: {
+    heading: "Support the project",
+    subcopy: "Help keep AI Wrapped free and privacy-focused.",
+    coffeeUrl: "https://ko-fi.com/theaiwrapped",
+    coffeeLabel: "Buy me a coffee",
+  },
 } as const;

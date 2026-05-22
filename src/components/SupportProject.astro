@@ -1,0 +1,23 @@
+---
+import { brand } from "@/config/brand";
+
+const { support } = brand;
+---
+
+<section class="no-print max-w-5xl mx-auto mb-12 sm:mb-16" aria-label="Support the project">
+  <div class="surface-card rounded-3xl p-8 md:p-12 flex flex-col md:flex-row items-center justify-between gap-8">
+    <div class="text-center md:text-left">
+      <h2 class="text-2xl md:text-3xl font-bold mb-2">{support.heading}</h2>
+      <p class="text-text-muted text-lg">{support.subcopy}</p>
+    </div>
+    <a
+      href={support.coffeeUrl}
+      class="bg-wrap-500 hover:bg-wrap-600 text-black px-8 py-4 rounded-2xl font-bold flex items-center gap-3 transition-all transform hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(0,255,65,0.3)]"
+      rel="noopener noreferrer"
+      target={support.coffeeUrl.startsWith("#") ? undefined : "_blank"}
+    >
+      <span class="material-symbols-outlined font-bold" aria-hidden="true">local_cafe</span>
+      <span class="text-lg">{support.coffeeLabel}</span>
+    </a>
+  </div>
+</section>

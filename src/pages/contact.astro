@@ -1,0 +1,24 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import SponsorInquiryPageForm from "@/components/react/SponsorInquiryForm";
+import { brand } from "@/config/brand";
+---
+
+<BaseLayout
+  title={`Contact — ${brand.name}`}
+  description="Get in touch about sponsoring AI Wrapped or other partnership inquiries."
+>
+  <meta name="robots" content="noindex, follow" slot="head" />
+  <header class="mb-8 space-y-2">
+    <p class="text-wrap-500 text-sm uppercase tracking-widest font-medium">Contact</p>
+    <h1 class="text-3xl font-bold text-white">Sponsorship inquiries</h1>
+    <p class="text-text-muted max-w-2xl">
+      Interested in the sponsor spot on the homepage? Fill out the form below and we&apos;ll get back
+      to you.
+    </p>
+  </header>
+
+  <div class="max-w-xl surface-card rounded-2xl border border-white/10 p-6 sm:p-8">
+    <SponsorInquiryPageForm client:load />
+  </div>
+</BaseLayout>
