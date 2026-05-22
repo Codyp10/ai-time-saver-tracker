@@ -166,11 +166,7 @@ export default function HomeUpload() {
 
   return (
     <>
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-6">
-        <div>
-          <h2 className="text-2xl font-bold">Get your wrap</h2>
-          <p className="text-text-muted mt-1">Pick the month, then drop your export files.</p>
-        </div>
+      <div className="flex flex-col md:flex-row items-start md:items-end justify-end mb-8 gap-6">
         <div className="flex gap-4">
           <label className="flex flex-col gap-1">
             <span className="text-[10px] uppercase tracking-widest text-text-muted font-bold px-1">

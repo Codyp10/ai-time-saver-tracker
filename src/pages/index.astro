@@ -7,7 +7,7 @@ import { brand } from "@/config/brand";
 const { samplePreview } = brand;
 ---
 
-<BaseLayout isLanding title={`${brand.name} — Your Month in AI`}>
+<BaseLayout isLanding title={`${brand.name} — Your Month in AI`} description={brand.description}>
   <div id="landing-static" class="pb-8">
     <section class="max-w-4xl mx-auto text-center min-h-[85vh] flex flex-col justify-center items-center py-20">
       <h1 class="text-5xl sm:text-6xl md:text-8xl lg:text-9xl font-black tracking-tighter leading-none">
@@ -59,6 +59,12 @@ const { samplePreview } = brand;
     </section>
 
     <section class="max-w-3xl mx-auto pb-16 sm:pb-32" aria-label="Upload your exports">
+      <div class="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-6">
+        <div>
+          <h2 class="text-2xl font-bold">Get your wrap</h2>
+          <p class="text-text-muted mt-1">Pick the month, then drop your export files.</p>
+        </div>
+      </div>
       <HomeUpload client:load />
     </section>
 

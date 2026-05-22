@@ -4,34 +4,34 @@ import { exportGuides } from "@/data/exportGuides";
 
 <section class="no-print max-w-5xl mx-auto mt-20 sm:mb-16">
   <h2 class="text-2xl font-bold mb-8 text-white">How to export your data</h2>
-  <div class="space-y-3" data-platform-guide>
+  <div class="space-y-3">
     {
       exportGuides.map((guide) => (
-        <div class="platform-guide-item">
-          <button
-            type="button"
-            class="platform-guide-toggle w-full bg-surface-800/30 border border-white/10 rounded-xl p-6 flex justify-between items-center group cursor-pointer transition-all text-left hover:border-wrap-500/50"
-            data-platform={guide.platform}
-            aria-expanded="false"
-          >
+        <details
+          class:list={[
+            "group bg-surface-800/30 border rounded-xl overflow-hidden open:pb-4",
+            guide.highlight ? "border-wrap-500/40" : "border-white/10 hover:border-wrap-500/50",
+          ]}
+        >
+          <summary class="list-none cursor-pointer p-6 flex justify-between items-center hover:bg-white/[0.02] transition-colors [&::-webkit-details-marker]:hidden">
             <span class="text-lg font-medium">{guide.platform}</span>
             <span
-              class="material-symbols-outlined text-text-muted group-hover:text-wrap-500 transition-transform platform-guide-icon"
+              class="material-symbols-outlined text-text-muted group-open:rotate-45 group-hover:text-wrap-500 transition-all"
               aria-hidden="true"
             >
               add
             </span>
-          </button>
-          <div class="platform-guide-panel hidden mt-2 px-6 pb-4 border border-white/5 rounded-xl bg-surface-800/20">
+          </summary>
+          <div class="px-6">
             {
               guide.highlight && (
-                <p class="text-amber-200/90 text-sm mb-3 pt-4">
+                <p class="text-amber-200/90 text-sm mb-3">
                   Important: Chat history is under My Activity → Gemini Apps, not the
                   top-level Gemini checkbox.
                 </p>
               )
             }
-            <ol class="list-decimal list-inside text-text-muted text-sm space-y-1 pt-2">
+            <ol class="list-decimal list-inside text-text-muted text-sm space-y-1">
               {guide.steps.map((step) => (
                 <li>{step}</li>
               ))}
@@ -45,36 +45,8 @@ import { exportGuides } from "@/data/exportGuides";
               Official instructions →
             </a>
           </div>
-        </div>
+        </details>
       ))
     }
   </div>
 </section>
-
-<script>
-  document.querySelectorAll("[data-platform-guide]").forEach((root) => {
-    root.querySelectorAll(".platform-guide-toggle").forEach((button) => {
-      button.addEventListener("click", () => {
-        const item = button.closest(".platform-guide-item");
-        const panel = item?.querySelector(".platform-guide-panel");
-        const icon = item?.querySelector(".platform-guide-icon");
-        if (!panel || !icon) return;
-
-        const isOpen = !panel.classList.contains("hidden");
-        root.querySelectorAll(".platform-guide-panel").forEach((p) => p.classList.add("hidden"));
-        root.querySelectorAll(".platform-guide-toggle").forEach((b) =>
-          b.setAttribute("aria-expanded", "false"),
-        );
-        root.querySelectorAll(".platform-guide-icon").forEach((i) =>
-          i.classList.remove("rotate-45"),
-        );
-
-        if (!isOpen) {
-          panel.classList.remove("hidden");
-          button.setAttribute("aria-expanded", "true");
-          icon.classList.add("rotate-45");
-        }
-      });
-    });
-  });
-</script>

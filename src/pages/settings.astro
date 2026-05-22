@@ -4,6 +4,15 @@ import SettingsView from "@/components/react/SettingsView";
 import { brand } from "@/config/brand";
 ---
 
-<BaseLayout title={`Settings — ${brand.name}`}>
+<BaseLayout
+  title={`Settings — ${brand.name}`}
+  description="Configure optional OpenAI classification, occupation, hourly rate, and default skill level for AI Wrapped."
+>
+  <header class="mb-8 space-y-2">
+    <h1 class="text-3xl font-bold text-white">Settings</h1>
+    <p class="text-text-muted max-w-2xl">
+      Optional preferences stored locally on your device. Nothing here is sent to a server.
+    </p>
+  </header>
   <SettingsView client:load />
 </BaseLayout>

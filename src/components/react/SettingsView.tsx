@@ -20,7 +20,6 @@ export default function SettingsView() {
 
   return (
     <div className="max-w-lg space-y-6">
-      <h1 className="text-3xl font-bold text-white">Settings</h1>
       <form onSubmit={handleSave} className="space-y-6">
         <fieldset className="space-y-2">
           <label className="block text-sm font-medium text-slate-200">

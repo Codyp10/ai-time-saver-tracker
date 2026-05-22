@@ -2,6 +2,7 @@
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import ReportView from "@/components/react/ReportView";
 import { brand } from "@/config/brand";
+import { formatMonthLabel } from "@/utils/month";
 
 export function getStaticPaths() {
   const paths = [];
@@ -25,8 +26,21 @@ const { monthKey } = Astro.params;
 if (!monthKey) {
   throw new Error("Missing month key");
 }
+
+const monthLabel = formatMonthLabel(monthKey);
 ---
 
-<BaseLayout title={`Report — ${brand.name}`}>
+<BaseLayout
+  title={`${monthLabel} Wrapped — ${brand.name}`}
+  description={`View your ${monthLabel} AI Wrapped report — estimated time spent with AI, time saved, and breakdowns by platform and task.`}
+>
+  <header class="mb-8 space-y-2">
+    <p class="text-wrap-500 text-sm uppercase tracking-widest font-medium">{monthLabel} Wrapped</p>
+    <h1 class="text-3xl font-bold text-white">Your monthly AI wrap</h1>
+    <p class="text-text-muted max-w-2xl">
+      Estimated time spent with AI, time saved, platform mix, and task breakdowns for {monthLabel}.
+      Report data is loaded from this device only.
+    </p>
+  </header>
   <ReportView client:load monthKey={monthKey} />
 </BaseLayout>
