@@ -2,13 +2,17 @@
 
 @theme {
   --font-sans: "Inter", system-ui, -apple-system, sans-serif;
-  --color-brand-400: #a78bfa;
-  --color-brand-500: #8b5cf6;
-  --color-brand-600: #7c3aed;
-  --color-brand-700: #6d28d9;
-  --color-surface-900: #0a0a0f;
-  --color-surface-800: #12121a;
-  --color-surface-700: #1c1c28;
+  --color-brand-400: #33ff66;
+  --color-brand-500: #00ff41;
+  --color-brand-600: #00cc34;
+  --color-brand-700: #00a329;
+  --color-wrap-400: #33ff66;
+  --color-wrap-500: #00ff41;
+  --color-wrap-600: #00cc34;
+  --color-surface-900: #131313;
+  --color-surface-800: #1e1e1e;
+  --color-surface-700: #252525;
+  --color-text-muted: #9ca3af;
 }
 
 html {
@@ -19,18 +23,54 @@ body {
   margin: 0;
   min-height: 100vh;
   font-family: var(--font-sans);
-  background: var(--color-surface-900);
-  color: #f1f5f9;
+  background-color: var(--color-surface-900);
+  color: white;
   -webkit-font-smoothing: antialiased;
+}
+
+body ::selection {
+  background-color: var(--color-wrap-500);
+  color: black;
 }
 
 #root {
   min-height: 100vh;
 }
 
+.text-glow {
+  text-shadow:
+    0 0 15px rgba(0, 255, 65, 0.6),
+    0 0 30px rgba(0, 255, 65, 0.4),
+    0 0 60px rgba(0, 255, 65, 0.2);
+}
+
+.neon-glow-hover {
+  transition: all 0.3s ease;
+}
+
+.neon-glow-hover:hover {
+  border-color: var(--color-wrap-500);
+  box-shadow: 0 0 25px rgba(0, 255, 65, 0.5);
+}
+
+.material-symbols-outlined {
+  font-family: "Material Symbols Outlined";
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+}
+
 .surface-card {
-  background: var(--color-surface-800);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: color-mix(in srgb, var(--color-surface-800) 50%, transparent);
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .surface-card-alt {

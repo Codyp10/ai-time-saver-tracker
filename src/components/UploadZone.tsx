@@ -19,6 +19,26 @@ function isAcceptedFile(name: string): boolean {
   );
 }
 
+function UploadIcon() {
+  return (
+    <svg
+      className="h-10 w-10"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+    >
+      <path
+        d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+      />
+    </svg>
+  );
+}
+
 export function UploadZone({ onFiles, disabled }: UploadZoneProps) {
   const [dragOver, setDragOver] = useState(false);
 
@@ -41,10 +61,10 @@ export function UploadZone({ onFiles, disabled }: UploadZoneProps) {
       }}
       onDragLeave={() => setDragOver(false)}
       onDrop={handleDrop}
-      className={`block rounded-2xl border-2 border-dashed p-12 text-center cursor-pointer transition-all ${
+      className={`group relative block border-2 border-dashed rounded-3xl p-10 sm:p-16 text-center cursor-pointer neon-glow-hover transition-all duration-300 ${
         dragOver
-          ? "border-brand-400 bg-brand-600/20"
-          : "border-white/20 hover:border-brand-500/50 hover:bg-white/5"
+          ? "border-wrap-500 bg-wrap-500/5"
+          : "border-white/10 bg-surface-800/30"
       } ${disabled ? "opacity-50 pointer-events-none" : ""}`}
     >
       <input
@@ -59,13 +79,18 @@ export function UploadZone({ onFiles, disabled }: UploadZoneProps) {
           e.target.value = "";
         }}
       />
-      <p className="text-xl font-semibold text-white mb-2">
-        Drop your AI export files here
-      </p>
-      <p className="text-slate-400 text-sm max-w-md mx-auto">
-        ChatGPT, Claude, Grok, or Gemini ZIPs — plus Claude Code (.jsonl) and Cursor
-        (.db / .vscdb). Parsed locally in your browser; nothing is uploaded to a server.
-      </p>
+      <div className="relative z-10">
+        <div className="mb-6 inline-flex items-center justify-center w-20 h-20 rounded-full bg-wrap-500/10 text-wrap-500 group-hover:scale-110 transition-transform">
+          <UploadIcon />
+        </div>
+        <h3 className="text-xl sm:text-2xl font-bold mb-3">Drop your export files here</h3>
+        <p className="text-text-muted max-w-md mx-auto">
+          ChatGPT, Claude, Grok, or Gemini ZIPs — plus Claude Code (.jsonl) and Cursor (.db).
+        </p>
+        <p className="text-wrap-500/60 text-sm mt-4 font-medium">
+          Parsed on your device; nothing is uploaded.
+        </p>
+      </div>
     </label>
   );
 }

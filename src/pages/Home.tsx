@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { UploadZone } from "@/components/UploadZone";
-import { PlatformGuide } from "@/components/PlatformGuide";
 import { SkillQuiz } from "@/components/SkillQuiz";
 import { OccupationPrompt } from "@/components/OccupationPrompt";
 import { parseUploadFile, filterConversationsByMonth, userFacingError } from "@/parsers";
@@ -11,6 +10,7 @@ import { buildMonthlyReport } from "@/engine/aggregate";
 import { defaultQuizProfile } from "@/engine/quizProfile";
 import { getReport, getSettings, saveReport, saveSettings } from "@/storage/db";
 import { brand } from "@/config/brand";
+import { LandingIntro } from "@/components/LandingIntro";
 
 type Step = "upload" | "occupation" | "quiz" | "processing";
 
@@ -125,66 +125,66 @@ export function Home() {
 
   return (
     <div className="space-y-10">
-      <section className="text-center space-y-3 max-w-2xl mx-auto">
-        <h1 className="text-4xl sm:text-5xl font-black text-white tracking-tight">
-          {brand.heroHeadline}
-        </h1>
-        <p className="text-slate-400">
-          {brand.heroSubcopy}
-        </p>
-      </section>
-
       {step === "upload" && (
-        <>
-          <div className="flex flex-wrap justify-center gap-4 items-end">
-            <label className="text-sm text-slate-400">
-              Report month
-              <select
-                value={month}
-                onChange={(e) => setMonth(Number(e.target.value))}
-                className="ml-2 bg-surface-800 border border-white/10 rounded-lg px-3 py-2 text-white"
-              >
-                {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
-                  <option key={m} value={m}>
-                    {new Date(2000, m - 1, 1).toLocaleString("en", { month: "long" })}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className="text-sm text-slate-400">
-              Year
-              <select
-                value={year}
-                onChange={(e) => setYear(Number(e.target.value))}
-                className="ml-2 bg-surface-800 border border-white/10 rounded-lg px-3 py-2 text-white"
-              >
-                {yearOptions.map((y) => (
-                  <option key={y} value={y}>
-                    {y}
-                  </option>
-                ))}
-              </select>
-            </label>
-          </div>
+        <LandingIntro
+          monthYearControls={
+            <div className="flex gap-4">
+              <label className="flex flex-col gap-1">
+                <span className="text-[10px] uppercase tracking-widest text-text-muted font-bold px-1">
+                  Month
+                </span>
+                <select
+                  value={month}
+                  onChange={(e) => setMonth(Number(e.target.value))}
+                  className="bg-surface-800 border border-white/10 rounded-lg text-white px-4 py-2 focus:ring-wrap-500 focus:border-wrap-500"
+                >
+                  {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
+                    <option key={m} value={m}>
+                      {new Date(2000, m - 1, 1).toLocaleString("en", { month: "long" })}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="flex flex-col gap-1">
+                <span className="text-[10px] uppercase tracking-widest text-text-muted font-bold px-1">
+                  Year
+                </span>
+                <select
+                  value={year}
+                  onChange={(e) => setYear(Number(e.target.value))}
+                  className="bg-surface-800 border border-white/10 rounded-lg text-white px-4 py-2 focus:ring-wrap-500 focus:border-wrap-500"
+                >
+                  {yearOptions.map((y) => (
+                    <option key={y} value={y}>
+                      {y}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+          }
+          uploadSection={
+            <>
+              <UploadZone onFiles={handleFiles} disabled={loading} />
 
-          <UploadZone onFiles={handleFiles} disabled={loading} />
-
-          {loading && (
-            <p className="text-center text-brand-400 animate-pulse">Parsing exports…</p>
-          )}
-          {error && (
-            <p className="text-center text-red-400 bg-red-950/30 rounded-lg p-3">{error}</p>
-          )}
-          {warnings.length > 0 && (
-            <ul className="text-amber-200/80 text-sm space-y-1 bg-amber-950/20 rounded-lg p-3">
-              {warnings.map((w) => (
-                <li key={w}>⚠ {w}</li>
-              ))}
-            </ul>
-          )}
-
-          <PlatformGuide />
-        </>
+              {loading && (
+                <p className="text-center text-wrap-500 animate-pulse mt-4">Parsing exports…</p>
+              )}
+              {error && (
+                <p className="text-center text-red-400 bg-red-950/30 rounded-lg p-3 mt-4">
+                  {error}
+                </p>
+              )}
+              {warnings.length > 0 && (
+                <ul className="text-amber-200/80 text-sm space-y-1 bg-amber-950/20 rounded-lg p-3 mt-4">
+                  {warnings.map((w) => (
+                    <li key={w}>⚠ {w}</li>
+                  ))}
+                </ul>
+              )}
+            </>
+          }
+        />
       )}
 
       {step === "occupation" && (
@@ -221,7 +221,7 @@ export function Home() {
       )}
 
       {step === "processing" && (
-        <p className="text-center text-brand-400 text-lg animate-pulse">
+        <p className="text-center text-wrap-400 text-lg animate-pulse">
           {brand.processingMessage}
         </p>
       )}

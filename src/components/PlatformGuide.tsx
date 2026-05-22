@@ -63,48 +63,59 @@ export function PlatformGuide() {
   const [open, setOpen] = useState<string | null>(null);
 
   return (
-    <section className="space-y-3">
-      <h2 className="text-lg font-semibold text-white">How to export your data</h2>
-      {guides.map((g) => (
-        <div
-          key={g.platform}
-          className={`rounded-xl border overflow-hidden ${
-            g.highlight ? "border-amber-500/40" : "border-white/10"
-          }`}
-        >
-          <button
-            type="button"
-            onClick={() => setOpen(open === g.platform ? null : g.platform)}
-            className="w-full px-4 py-3 flex justify-between items-center text-left bg-white/5 hover:bg-white/10"
-          >
-            <span className="font-medium text-white">{g.platform}</span>
-            <span className="text-slate-400">{open === g.platform ? "−" : "+"}</span>
-          </button>
-          {open === g.platform && (
-            <div className="px-4 pb-4 pt-1 bg-black/20">
-              {g.highlight && (
-                <p className="text-amber-200/90 text-sm mb-2">
-                  Important: Chat history is under My Activity → Gemini Apps, not
-                  the top-level Gemini checkbox.
-                </p>
-              )}
-              <ol className="list-decimal list-inside text-slate-300 text-sm space-y-1">
-                {g.steps.map((s) => (
-                  <li key={s}>{s}</li>
-                ))}
-              </ol>
-              <a
-                href={g.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-block mt-3 text-brand-400 text-sm hover:underline"
+    <section className="no-print">
+      <h2 className="text-2xl font-bold mb-8 text-white">How to export your data</h2>
+      <div className="space-y-3">
+        {guides.map((g) => {
+          const isOpen = open === g.platform;
+          return (
+            <div key={g.platform}>
+              <button
+                type="button"
+                onClick={() => setOpen(isOpen ? null : g.platform)}
+                className={`w-full bg-surface-800/30 border rounded-xl p-6 flex justify-between items-center group cursor-pointer transition-all text-left ${
+                  g.highlight
+                    ? "border-wrap-500/40 hover:border-wrap-500/60"
+                    : "border-white/10 hover:border-wrap-500/50"
+                }`}
               >
-                Official instructions →
-              </a>
+                <span className="text-lg font-medium">{g.platform}</span>
+                <span
+                  className={`material-symbols-outlined text-text-muted group-hover:text-wrap-500 transition-colors ${
+                    isOpen ? "rotate-45" : ""
+                  }`}
+                  aria-hidden
+                >
+                  add
+                </span>
+              </button>
+              {isOpen && (
+                <div className="mt-2 px-6 pb-4 border border-white/5 rounded-xl bg-surface-800/20">
+                  {g.highlight && (
+                    <p className="text-amber-200/90 text-sm mb-3 pt-4">
+                      Important: Chat history is under My Activity → Gemini Apps, not the
+                      top-level Gemini checkbox.
+                    </p>
+                  )}
+                  <ol className="list-decimal list-inside text-text-muted text-sm space-y-1 pt-2">
+                    {g.steps.map((s) => (
+                      <li key={s}>{s}</li>
+                    ))}
+                  </ol>
+                  <a
+                    href={g.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-block mt-4 text-wrap-500 text-sm hover:underline"
+                  >
+                    Official instructions →
+                  </a>
+                </div>
+              )}
             </div>
-          )}
-        </div>
-      ))}
+          );
+        })}
+      </div>
     </section>
   );
 }

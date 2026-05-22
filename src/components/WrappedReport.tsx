@@ -46,7 +46,7 @@ function BreakdownBars({
               </div>
               <div className="h-2 rounded-full bg-white/5 overflow-hidden">
                 <div
-                  className="h-full rounded-full bg-brand-500/70"
+                  className="h-full rounded-full bg-wrap-500/80"
                   style={{ width: `${(value / max) * 100}%` }}
                 />
               </div>
@@ -129,10 +129,10 @@ export function WrappedReport({ report, hourlyRate, occupationId }: WrappedRepor
   return (
     <section className="space-y-8 print-report">
       <header className="text-center space-y-2">
-        <p className="text-brand-400 text-sm uppercase tracking-widest font-medium">
+        <p className="text-wrap-400 text-sm uppercase tracking-widest font-medium">
           {formatMonthLabel(report.monthKey)} Wrapped
         </p>
-        <h1 className="text-4xl sm:text-5xl font-black text-white">
+        <h1 className="text-4xl sm:text-5xl font-extrabold text-white">
           {formatHours(totals.minutesSaved)} saved
         </h1>
         <p className="text-slate-400">

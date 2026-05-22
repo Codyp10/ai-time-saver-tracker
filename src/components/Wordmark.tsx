@@ -9,10 +9,10 @@ export function Wordmark({ className = "" }: WordmarkProps) {
   return (
     <Link
       to="/"
-      className={`font-bold text-lg tracking-tight ${className}`}
+      className={`font-bold text-xl tracking-tight ${className}`}
     >
       <span className="text-white">{brand.wordmark.primary}</span>{" "}
-      <span className="text-brand-400">{brand.wordmark.accent}</span>
+      <span className="text-wrap-400">{brand.wordmark.accent}</span>
     </Link>
   );
 }
