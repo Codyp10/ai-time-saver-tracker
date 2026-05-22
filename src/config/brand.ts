@@ -35,7 +35,10 @@ export const brand = {
   navUpload: "Get your wrap",
   processingMessage: "Wrapping your month…",
   footerPrivacy: "Built for privacy.",
-  url: "",
+  url: "https://theaiwrapped.com",
+  ogImage: "/og.jpg",
+  ogImageAlt:
+    "AI Wrapped — Your AI month, wrapped. 47 hrs saved. Upload chat exports and see how much time AI saved you.",
   sponsor: {
     enabled: true,
     label: "Sponsor",
