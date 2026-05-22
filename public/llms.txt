@@ -1,0 +1,34 @@
+# AI Wrapped
+
+> Privacy-first monthly wrap of your AI usage. Upload chat exports from ChatGPT, Claude, Grok, Gemini, Claude Code, and Cursor to see estimated time spent and time saved. Everything runs in the browser — files never leave your device.
+
+## What it does
+
+AI Wrapped parses AI chat export files locally in the user's browser and generates a monthly summary showing:
+- Estimated time spent interacting with AI tools
+- Estimated time saved compared to doing the work manually
+- Category breakdowns (coding, writing, research, etc.)
+- Top tasks within each category
+
+## Supported sources
+
+- ChatGPT (ZIP export from Settings → Data Controls)
+- Claude (ZIP export from Settings → Privacy)
+- Grok (ZIP export from accounts.x.ai/data)
+- Gemini (JSON via Google Takeout → My Activity → Gemini Apps)
+- Claude Code (local .jsonl session files from ~/.claude/)
+- Cursor (local .db / .vscdb files)
+
+## Key properties
+
+- Free to use, no signup required
+- All parsing happens client-side in the browser
+- No files are uploaded to any server
+- No account, no tracking of chat content
+
+## Pages
+
+- [Home](https://ai-time-saver-tracker.vercel.app/): Upload exports and generate a wrap
+- [History](https://ai-time-saver-tracker.vercel.app/history): View past wraps stored locally
+- [Methodology](https://ai-time-saver-tracker.vercel.app/methodology): How time-saved estimates are calculated
+- [Settings](https://ai-time-saver-tracker.vercel.app/settings): Configure preferences

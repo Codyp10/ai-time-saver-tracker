@@ -5,9 +5,39 @@ import HomeUpload from "@/components/react/HomeUpload";
 import { brand } from "@/config/brand";
 
 const { samplePreview } = brand;
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  name: "AI Wrapped",
+  url: "https://ai-time-saver-tracker.vercel.app/",
+  description:
+    "Privacy-first monthly wrap of your AI usage — estimated time spent and time saved from your export files. Runs entirely in your browser.",
+  applicationCategory: "ProductivityApplication",
+  operatingSystem: "Any (web browser)",
+  browserRequirements: "Requires JavaScript. Requires HTML5.",
+  offers: {
+    "@type": "Offer",
+    price: "0",
+    priceCurrency: "USD",
+  },
+  featureList: [
+    "Parses ChatGPT, Claude, Grok, and Gemini exports",
+    "Supports Claude Code (.jsonl) and Cursor (.db) local files",
+    "Client-side parsing — no files uploaded",
+    "Time saved estimates",
+    "Category and task breakdowns",
+    "Monthly wraps stored locally",
+  ],
+  creator: {
+    "@type": "Organization",
+    name: "AI Wrapped",
+  },
+};
 ---
 
 <BaseLayout isLanding title={`${brand.name} — Your Month in AI`} description={brand.description}>
+  <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} slot="head" />
   <div id="landing-static" class="pb-8">
     <section class="max-w-4xl mx-auto text-center min-h-[85vh] flex flex-col justify-center items-center py-20">
       <h1 class="text-5xl sm:text-6xl md:text-8xl lg:text-9xl font-black tracking-tighter leading-none">

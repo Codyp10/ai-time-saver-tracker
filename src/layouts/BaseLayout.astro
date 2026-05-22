@@ -47,6 +47,7 @@ const secondaryNav = [
     <meta name="twitter:description" content={description} />
     <meta name="robots" content="index, follow" />
     <title>{title}</title>
+    <slot name="head" />
   </head>
   <body class="font-sans antialiased">
     <noscript>
