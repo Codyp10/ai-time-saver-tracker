@@ -11,22 +11,41 @@ import { formatMonthLabel } from "@/utils/month";
 import { buildShareSummary, downloadReportJson } from "@/utils/shareSummary";
 
 interface ReportViewProps {
-  monthKey: string;
+  monthKey?: string;
 }
 
-export default function ReportView({ monthKey: key }: ReportViewProps) {
+export default function ReportView({ monthKey: monthKeyProp }: ReportViewProps) {
+  const [monthKey, setMonthKey] = useState<string | null>(monthKeyProp ?? null);
   const [report, setReport] = useState<MonthlyReport | null>(null);
   const [hourlyRate, setHourlyRate] = useState<number | undefined>();
   const [occupationId, setOccupationId] = useState<string | undefined>();
   const [copied, setCopied] = useState(false);
+  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    getReport(key).then((r) => setReport(r ?? null));
+    if (monthKeyProp) {
+      setMonthKey(monthKeyProp);
+      return;
+    }
+    const params = new URLSearchParams(window.location.search);
+    const fromQuery = params.get("m");
+    if (fromQuery && /^\d{4}-\d{2}$/.test(fromQuery)) {
+      setMonthKey(fromQuery);
+    }
+  }, [monthKeyProp]);
+
+  useEffect(() => {
+    if (!monthKey) return;
+    setLoaded(false);
+    getReport(monthKey).then((r) => {
+      setReport(r ?? null);
+      setLoaded(true);
+    });
     getSettings().then((s) => {
       setHourlyRate(s.hourlyRate);
       setOccupationId(s.occupation);
     });
-  }, [key]);
+  }, [monthKey]);
 
   async function handleCopySummary() {
     if (!report) return;
@@ -44,10 +63,24 @@ export default function ReportView({ monthKey: key }: ReportViewProps) {
     downloadReportJson(report, serializeReportForExport(report));
   }
 
-  if (!report) {
+  if (!monthKey) {
     return (
       <div className="text-center space-y-4">
-        <p className="text-slate-400">No report found for {formatMonthLabel(key)}.</p>
+        <p className="text-slate-400">No month selected.</p>
+        <a href="/" className="text-wrap-500 hover:underline">
+          Upload exports
+        </a>
+      </div>
+    );
+  }
+
+  if (!report) {
+    if (!loaded) {
+      return <p className="text-center text-slate-400">Loading your wrap…</p>;
+    }
+    return (
+      <div className="text-center space-y-4">
+        <p className="text-slate-400">No report found for {formatMonthLabel(monthKey)}.</p>
         <a href="/" className="text-wrap-500 hover:underline">
           Upload exports
         </a>

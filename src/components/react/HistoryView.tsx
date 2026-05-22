@@ -185,7 +185,7 @@ export default function HistoryView() {
             >
               <div>
                 <a
-                  href={`/report/${r.monthKey}`}
+                  href={`/report?m=${r.monthKey}`}
                   className="text-lg font-semibold text-white hover:text-wrap-500"
                 >
                   {formatMonthLabel(r.monthKey)}

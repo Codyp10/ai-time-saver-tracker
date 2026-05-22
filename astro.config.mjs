@@ -9,7 +9,12 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
   site: "https://ai-time-saver-tracker.vercel.app",
-  integrations: [react(), sitemap()],
+  integrations: [
+    react(),
+    sitemap({
+      filter: (page) => !page.includes("/report"),
+    }),
+  ],
   vite: {
     plugins: [tailwindcss()],
     resolve: {

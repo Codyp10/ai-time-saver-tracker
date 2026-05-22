@@ -111,7 +111,7 @@ export default function HomeUpload() {
         settings.openaiApiKey,
       );
       await saveReport(report);
-      window.location.href = `/report/${report.monthKey}`;
+      window.location.href = `/report?m=${report.monthKey}`;
     } catch (err) {
       setError(userFacingError(err));
       const settings = await getSettings();

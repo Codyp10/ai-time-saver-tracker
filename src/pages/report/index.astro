@@ -1,0 +1,21 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import ReportView from "@/components/react/ReportView";
+import { brand } from "@/config/brand";
+---
+
+<BaseLayout
+  title={`Your wrap — ${brand.name}`}
+  description="View your AI Wrapped report — estimated time spent with AI, time saved, and breakdowns by platform and task. Loaded from this device only."
+>
+  <meta name="robots" content="noindex, nofollow" slot="head" />
+  <header class="mb-8 space-y-2">
+    <p class="text-wrap-500 text-sm uppercase tracking-widest font-medium">Your wrap</p>
+    <h1 class="text-3xl font-bold text-white">Your monthly AI wrap</h1>
+    <p class="text-text-muted max-w-2xl">
+      Estimated time spent with AI, time saved, platform mix, and task breakdowns. Report data is
+      loaded from this device only.
+    </p>
+  </header>
+  <ReportView client:load />
+</BaseLayout>
