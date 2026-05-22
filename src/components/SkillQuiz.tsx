@@ -1,12 +1,20 @@
 import { useState } from "react";
 import type { SkillLevel } from "@/types/conversation";
 
+const SKILL_LABELS: Record<SkillLevel, string> = {
+  novice: "novice",
+  intermediate: "intermediate",
+  expert: "expert",
+  expert_mature_code: "expert (mature codebase)",
+};
+
 interface SkillQuizProps {
+  defaultSkillLevel?: SkillLevel;
   onComplete: (level: SkillLevel) => void;
   onSkip: () => void;
 }
 
-export function SkillQuiz({ onComplete, onSkip }: SkillQuizProps) {
+export function SkillQuiz({ defaultSkillLevel = "intermediate", onComplete, onSkip }: SkillQuizProps) {
   const [experience, setExperience] = useState("");
   const [familiarity, setFamiliarity] = useState("");
   const [acceptance, setAcceptance] = useState("");
@@ -113,7 +121,7 @@ export function SkillQuiz({ onComplete, onSkip }: SkillQuizProps) {
           onClick={onSkip}
           className="px-6 py-2.5 rounded-full border border-white/20 text-slate-300 hover:bg-white/10"
         >
-          Skip (use intermediate)
+          Use default ({SKILL_LABELS[defaultSkillLevel]})
         </button>
       </div>
     </div>

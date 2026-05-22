@@ -1,13 +1,13 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { UploadZone } from "@/components/UploadZone";
 import { PlatformGuide } from "@/components/PlatformGuide";
 import { SkillQuiz } from "@/components/SkillQuiz";
 import { parseUploadFile, filterConversationsByMonth, userFacingError } from "@/parsers";
 import type { NormalizedConversation, SkillLevel } from "@/types/conversation";
-import { getPreviousMonth, monthKey } from "@/utils/month";
+import { formatMonthLabel, getPreviousMonth, monthKey } from "@/utils/month";
 import { buildMonthlyReport } from "@/engine/aggregate";
-import { getSettings, saveReport } from "@/storage/db";
+import { getReport, getSettings, saveReport } from "@/storage/db";
 
 type Step = "upload" | "quiz" | "processing";
 
@@ -22,6 +22,16 @@ export function Home() {
   const [warnings, setWarnings] = useState<string[]>([]);
   const [parsed, setParsed] = useState<NormalizedConversation[]>([]);
   const [platforms, setPlatforms] = useState<string[]>([]);
+  const [defaultSkillLevel, setDefaultSkillLevel] = useState<SkillLevel>("intermediate");
+
+  const currentYear = new Date().getFullYear();
+  const yearOptions = Array.from({ length: 4 }, (_, i) => currentYear - 2 + i);
+
+  useEffect(() => {
+    getSettings().then((s) => {
+      if (s.skillLevel) setDefaultSkillLevel(s.skillLevel);
+    });
+  }, []);
 
   async function handleFiles(files: File[]) {
     setError(null);
@@ -66,10 +76,24 @@ export function Home() {
     setLoading(true);
     setError(null);
     try {
+      const key = monthKey(year, month);
+      const existing = await getReport(key);
+      if (existing) {
+        const label = formatMonthLabel(key);
+        const ok = confirm(
+          `A report for ${label} already exists. Replace it with this new wrap?`,
+        );
+        if (!ok) {
+          setStep("quiz");
+          setLoading(false);
+          return;
+        }
+      }
+
       const settings = await getSettings();
       const report = await buildMonthlyReport(
         parsed,
-        monthKey(year, month),
+        key,
         skillLevel,
         settings.openaiApiKey,
       );
@@ -90,8 +114,8 @@ export function Home() {
           Your AI month, wrapped
         </h1>
         <p className="text-slate-400">
-          Upload export ZIPs from ChatGPT, Claude, Grok, or Gemini. Get estimated
-          time spent and time saved — computed entirely in your browser.
+          Upload export ZIPs from ChatGPT, Claude, Grok, Gemini, Claude Code, or Cursor.
+          Get estimated time spent and time saved — computed entirely in your browser.
         </p>
       </section>
 
@@ -119,7 +143,7 @@ export function Home() {
                 onChange={(e) => setYear(Number(e.target.value))}
                 className="ml-2 bg-surface-800 border border-white/10 rounded-lg px-3 py-2 text-white"
               >
-                {[2024, 2025, 2026].map((y) => (
+                {yearOptions.map((y) => (
                   <option key={y} value={y}>
                     {y}
                   </option>
@@ -155,8 +179,9 @@ export function Home() {
             from {platforms.join(", ")} for {month}/{year}.
           </p>
           <SkillQuiz
+            defaultSkillLevel={defaultSkillLevel}
             onComplete={finishReport}
-            onSkip={() => finishReport("intermediate")}
+            onSkip={() => finishReport(defaultSkillLevel)}
           />
           {error && (
             <p className="text-center text-red-400">{error}</p>

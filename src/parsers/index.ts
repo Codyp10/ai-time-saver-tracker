@@ -1,6 +1,8 @@
 import type { NormalizedConversation, Platform } from "@/types/conversation";
 import { parseChatGPTExport } from "./chatgpt";
 import { parseClaudeExport } from "./claude";
+import { parseClaudeCodeExport, parseClaudeCodeJsonl } from "./claude-code";
+import { parseCursorJsonExport, parseCursorSqlite } from "./cursor";
 import { parseGrokExport } from "./grok";
 import { parseGeminiExport } from "./gemini";
 import { ParseError, userFacingError } from "./errors";
@@ -8,6 +10,7 @@ import { decodeText, extractZip, findEntry, parseJson } from "./zip";
 import {
   detectPlatformFromEntries,
   detectPlatformFromJsonFilename,
+  detectPlatformFromJsonSample,
 } from "./detectPlatform";
 
 export { userFacingError, ParseError };
@@ -18,6 +21,8 @@ export interface ParseResult {
   warnings: string[];
 }
 
+const LOCAL_FILE_PLATFORMS: Platform[] = ["cursor", "claude_code"];
+
 export async function parseUploadFile(file: File): Promise<ParseResult> {
   const warnings: string[] = [];
   const name = file.name.toLowerCase();
@@ -26,10 +31,51 @@ export async function parseUploadFile(file: File): Promise<ParseResult> {
     return parseZipFile(file, warnings);
   }
 
+  if (name.endsWith(".jsonl")) {
+    warnings.push("Claude Code sessions are parsed from local JSONL — data stays in your browser.");
+    const text = await file.text();
+    return {
+      platform: "claude_code",
+      conversations: parseClaudeCodeJsonl(text, file.name),
+      warnings,
+    };
+  }
+
+  if (name.endsWith(".db") || name.endsWith(".vscdb")) {
+    warnings.push(
+      "Cursor databases are parsed locally in your browser. They may contain file paths from your projects.",
+    );
+    const buffer = new Uint8Array(await file.arrayBuffer());
+    return {
+      platform: "cursor",
+      conversations: await parseCursorSqlite(buffer),
+      warnings,
+    };
+  }
+
   if (name.endsWith(".json")) {
     const text = await file.text();
     const json = parseJson<unknown>(text);
-    const platform = detectPlatformFromJsonFilename(file.name);
+    const fromName = detectPlatformFromJsonFilename(file.name);
+    const fromSample = detectPlatformFromJsonSample(json);
+
+    if (fromName === "claude_code" || fromSample === "claude_code") {
+      return {
+        platform: "claude_code",
+        conversations: parseClaudeCodeExport(json),
+        warnings,
+      };
+    }
+
+    if (fromName === "cursor" || fromSample === "cursor") {
+      return {
+        platform: "cursor",
+        conversations: parseCursorJsonExport(json),
+        warnings,
+      };
+    }
+
+    const platform = fromName ?? fromSample;
     if (!platform) {
       const sample = JSON.stringify(json).slice(0, 2000);
       if (sample.includes('"chat_messages"')) {
@@ -40,6 +86,7 @@ export async function parseUploadFile(file: File): Promise<ParseResult> {
       }
       return { platform: "grok", conversations: parseGrokExport(json), warnings };
     }
+
     return {
       platform,
       conversations: parseByPlatform(platform, json),
@@ -47,7 +94,10 @@ export async function parseUploadFile(file: File): Promise<ParseResult> {
     };
   }
 
-  throw new ParseError("Please upload a .zip or .json export file.", "UNSUPPORTED_FILE");
+  throw new ParseError(
+    "Please upload a .zip, .json, .jsonl, or Cursor .db / .vscdb file.",
+    "UNSUPPORTED_FILE",
+  );
 }
 
 async function parseZipFile(file: File, warnings: string[]): Promise<ParseResult> {
@@ -56,7 +106,7 @@ async function parseZipFile(file: File, warnings: string[]): Promise<ParseResult
 
   if (!platform) {
     throw new ParseError(
-      "Could not detect the AI platform. Supported: ChatGPT, Claude, Grok, Gemini Takeout.",
+      "Could not detect the AI platform. Supported: ChatGPT, Claude, Grok, Gemini Takeout, Claude Code, Cursor.",
       "UNKNOWN_PLATFORM",
     );
   }
@@ -95,6 +145,28 @@ async function parseZipFile(file: File, warnings: string[]): Promise<ParseResult
     return { platform: "gemini", conversations: parseGeminiExport(json), warnings };
   }
 
+  if (platform === "claude_code") {
+    const jsonlEntry = entries.find((e) => e.path.toLowerCase().endsWith(".jsonl"));
+    if (jsonlEntry) {
+      warnings.push("Claude Code JSONL parsed from ZIP — sessions grouped by sessionId.");
+      return {
+        platform: "claude_code",
+        conversations: parseClaudeCodeJsonl(decodeText(jsonlEntry.data), jsonlEntry.path),
+        warnings,
+      };
+    }
+    const jsonEntry = entries.find((e) => e.path.toLowerCase().endsWith(".json"));
+    if (!jsonEntry) {
+      throw new ParseError("No JSONL or JSON session file found in ZIP.", "MISSING_FILE");
+    }
+    const json = parseJson<unknown>(decodeText(jsonEntry.data));
+    return {
+      platform: "claude_code",
+      conversations: parseClaudeCodeExport(json),
+      warnings,
+    };
+  }
+
   const jsonEntry = entries.find((e) => e.path.toLowerCase().endsWith(".json"));
   if (!jsonEntry) {
     throw new ParseError("No JSON file found in ZIP.", "MISSING_FILE");
@@ -113,6 +185,10 @@ function parseByPlatform(platform: Platform, json: unknown): NormalizedConversat
       return parseGrokExport(json);
     case "gemini":
       return parseGeminiExport(json);
+    case "claude_code":
+      return parseClaudeCodeExport(json);
+    case "cursor":
+      return parseCursorJsonExport(json);
   }
 }
 
@@ -126,3 +202,5 @@ export function filterConversationsByMonth(
     return d.getFullYear() === year && d.getMonth() === month - 1;
   });
 }
+
+export { LOCAL_FILE_PLATFORMS };

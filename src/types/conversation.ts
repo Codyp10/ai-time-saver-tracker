@@ -1,4 +1,4 @@
-export type Platform = "chatgpt" | "claude" | "grok" | "gemini";
+export type Platform = "chatgpt" | "claude" | "grok" | "gemini" | "cursor" | "claude_code";
 
 export type MessageRole = "user" | "assistant" | "system" | "tool";
 

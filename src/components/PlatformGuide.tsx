@@ -39,6 +39,24 @@ const guides = [
     ],
     url: "https://takeout.google.com",
   },
+  {
+    platform: "Claude Code (local JSONL)",
+    steps: [
+      "Locate session files at ~/.claude/projects/<project>/<sessionId>.jsonl",
+      "Or use the global ~/.claude/history.jsonl log",
+      "Upload one or more .jsonl files directly — parsed locally in your browser",
+    ],
+    url: "https://docs.anthropic.com/en/docs/claude-code",
+  },
+  {
+    platform: "Cursor (local database)",
+    steps: [
+      "Locate chat data at ~/.cursor/chats/<hash>/store.db (newer builds)",
+      "Or ~/Library/Application Support/Cursor/User/globalStorage/state.vscdb (macOS)",
+      "Upload the .db or .vscdb file — parsed locally; may include project file paths",
+    ],
+    url: "https://cursor.com",
+  },
 ];
 
 export function PlatformGuide() {

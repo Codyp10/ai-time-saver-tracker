@@ -4,6 +4,60 @@ import { TASK_TABLE } from "@/engine/taskTable";
 import { formatHourLabel } from "@/utils/month";
 import { minutesToDollars, resolveHourlyRate } from "@/engine/value";
 
+const PLATFORM_LABELS: Record<string, string> = {
+  chatgpt: "ChatGPT",
+  claude: "Claude",
+  grok: "Grok",
+  gemini: "Gemini",
+  cursor: "Cursor",
+  claude_code: "Claude Code",
+};
+
+function BreakdownBars({
+  title,
+  entries,
+  total,
+  formatValue,
+}: {
+  title: string;
+  entries: [string, number][];
+  total: number;
+  formatValue: (value: number) => string;
+}) {
+  const filtered = entries.filter(([, v]) => v > 0).sort((a, b) => b[1] - a[1]);
+  if (filtered.length === 0) return null;
+
+  const max = filtered[0]![1] || 1;
+
+  return (
+    <div className="rounded-xl border border-white/10 p-4 bg-white/5">
+      <h3 className="font-semibold text-white mb-3">{title}</h3>
+      <ul className="space-y-3">
+        {filtered.map(([key, value]) => {
+          const pct = total > 0 ? Math.round((value / total) * 100) : 0;
+          return (
+            <li key={key}>
+              <div className="flex justify-between text-sm text-slate-300 mb-1">
+                <span className="capitalize">{key.replace(/_/g, " ")}</span>
+                <span>
+                  {formatValue(value)}
+                  {total > 0 && ` · ${pct}%`}
+                </span>
+              </div>
+              <div className="h-2 rounded-full bg-white/5 overflow-hidden">
+                <div
+                  className="h-full rounded-full bg-brand-500/70"
+                  style={{ width: `${(value / max) * 100}%` }}
+                />
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  );
+}
+
 interface WrappedReportProps {
   report: MonthlyReport;
   hourlyRate?: number;
@@ -19,6 +73,19 @@ export function WrappedReport({ report, hourlyRate, occupationId }: WrappedRepor
   const books = Math.round(totals.minutesSaved / 60 / HOURS_PER_BOOK);
 
   const modelEntries = Object.entries(totals.byModel).sort((a, b) => b[1] - a[1]);
+
+  const platformEntries = Object.entries(totals.byPlatform).map(([p, mins]) => [
+    PLATFORM_LABELS[p] ?? p,
+    mins,
+  ]) as [string, number][];
+
+  const categoryEntries = Object.entries(totals.byCategory) as [string, number][];
+
+  const convosByPlatform = report.analyses.reduce<Record<string, number>>((acc, a) => {
+    const label = PLATFORM_LABELS[a.conversation.platform] ?? a.conversation.platform;
+    acc[label] = (acc[label] ?? 0) + 1;
+    return acc;
+  }, {});
 
   const cards = [
     {
@@ -60,7 +127,7 @@ export function WrappedReport({ report, hourlyRate, occupationId }: WrappedRepor
   ];
 
   return (
-    <section className="space-y-8">
+    <section className="space-y-8 print-report">
       <header className="text-center space-y-2">
         <p className="text-brand-400 text-sm uppercase tracking-widest font-medium">
           Your monthly wrap
@@ -85,6 +152,37 @@ export function WrappedReport({ report, hourlyRate, occupationId }: WrappedRepor
           </article>
         ))}
       </div>
+
+      <div className="grid sm:grid-cols-2 gap-4">
+        <BreakdownBars
+          title="By platform (time saved)"
+          entries={platformEntries}
+          total={totals.minutesSaved}
+          formatValue={(v) => formatHours(v)}
+        />
+        <BreakdownBars
+          title="By task category (time saved)"
+          entries={categoryEntries}
+          total={totals.minutesSaved}
+          formatValue={(v) => formatHours(v)}
+        />
+      </div>
+
+      {Object.keys(convosByPlatform).length > 0 && (
+        <div className="rounded-xl border border-white/10 p-4 bg-white/5">
+          <h3 className="font-semibold text-white mb-3">Conversations by platform</h3>
+          <ul className="space-y-2">
+            {Object.entries(convosByPlatform)
+              .sort((a, b) => b[1] - a[1])
+              .map(([platform, count]) => (
+                <li key={platform} className="flex justify-between text-sm text-slate-300">
+                  <span>{platform}</span>
+                  <span>{count} conversations</span>
+                </li>
+              ))}
+          </ul>
+        </div>
+      )}
 
       {modelEntries.length > 0 && (
         <div className="rounded-xl border border-white/10 p-4 bg-white/5">

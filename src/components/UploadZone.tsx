@@ -1,8 +1,22 @@
 import { useCallback, useState } from "react";
 
+const ACCEPTED =
+  ".zip,.json,.jsonl,.db,.vscdb,application/json,application/zip,application/x-sqlite3";
+
 interface UploadZoneProps {
   onFiles: (files: File[]) => void;
   disabled?: boolean;
+}
+
+function isAcceptedFile(name: string): boolean {
+  const lower = name.toLowerCase();
+  return (
+    lower.endsWith(".zip") ||
+    lower.endsWith(".json") ||
+    lower.endsWith(".jsonl") ||
+    lower.endsWith(".db") ||
+    lower.endsWith(".vscdb")
+  );
 }
 
 export function UploadZone({ onFiles, disabled }: UploadZoneProps) {
@@ -13,9 +27,7 @@ export function UploadZone({ onFiles, disabled }: UploadZoneProps) {
       e.preventDefault();
       setDragOver(false);
       if (disabled) return;
-      const files = Array.from(e.dataTransfer.files).filter(
-        (f) => f.name.endsWith(".zip") || f.name.endsWith(".json"),
-      );
+      const files = Array.from(e.dataTransfer.files).filter((f) => isAcceptedFile(f.name));
       if (files.length) onFiles(files);
     },
     [disabled, onFiles],
@@ -37,22 +49,22 @@ export function UploadZone({ onFiles, disabled }: UploadZoneProps) {
     >
       <input
         type="file"
-        accept=".zip,.json"
+        accept={ACCEPTED}
         multiple
         className="hidden"
         disabled={disabled}
         onChange={(e) => {
-          const files = Array.from(e.target.files ?? []);
+          const files = Array.from(e.target.files ?? []).filter((f) => isAcceptedFile(f.name));
           if (files.length) onFiles(files);
           e.target.value = "";
         }}
       />
       <p className="text-xl font-semibold text-white mb-2">
-        Drop your AI export ZIPs here
+        Drop your AI export files here
       </p>
       <p className="text-slate-400 text-sm max-w-md mx-auto">
-        ChatGPT, Claude, Grok, or Gemini Takeout (.zip or .json). Files are parsed
-        locally in your browser — nothing is uploaded to a server.
+        ChatGPT, Claude, Grok, or Gemini ZIPs — plus Claude Code (.jsonl) and Cursor
+        (.db / .vscdb). Parsed locally in your browser; nothing is uploaded to a server.
       </p>
     </label>
   );

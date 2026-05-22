@@ -26,7 +26,7 @@ const ALL_CATEGORIES: TaskCategory[] = [
   "other",
 ];
 
-const ALL_PLATFORMS: Platform[] = ["chatgpt", "claude", "grok", "gemini"];
+const ALL_PLATFORMS: Platform[] = ["chatgpt", "claude", "grok", "gemini", "cursor", "claude_code"];
 
 export async function buildMonthlyReport(
   conversations: NormalizedConversation[],

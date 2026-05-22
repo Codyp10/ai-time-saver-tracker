@@ -37,3 +37,40 @@ body {
   background: linear-gradient(135deg, rgba(14, 165, 233, 0.25) 0%, rgba(124, 58, 237, 0.3) 100%);
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
+
+@media print {
+  body {
+    background: white !important;
+    color: #111 !important;
+  }
+
+  header,
+  footer,
+  nav,
+  .no-print {
+    display: none !important;
+  }
+
+  main {
+    max-width: 100% !important;
+    padding: 0 !important;
+  }
+
+  .print-report h1,
+  .print-report p,
+  .print-report span,
+  .print-report li {
+    color: #111 !important;
+  }
+
+  .gradient-card,
+  .gradient-card-alt {
+    background: #f8fafc !important;
+    border: 1px solid #e2e8f0 !important;
+    break-inside: avoid;
+  }
+
+  .conversation-table-section {
+    break-before: page;
+  }
+}
