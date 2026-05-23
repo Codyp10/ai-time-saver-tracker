@@ -3,6 +3,12 @@
 /** Max compressed upload size (200 MB — large ChatGPT/Claude exports). */
 export const MAX_UPLOAD_BYTES = 200 * 1024 * 1024;
 
+/** Max combined size of all files in one multi-file upload (500 MB). */
+export const MAX_TOTAL_UPLOAD_BYTES = 500 * 1024 * 1024;
+
+/** Max number of files in one multi-file upload. */
+export const MAX_UPLOAD_FILE_COUNT = 20;
+
 /** Max total uncompressed bytes across all ZIP entries (500 MB). */
 export const MAX_UNCOMPRESSED_BYTES = 500 * 1024 * 1024;
 
@@ -31,6 +37,29 @@ export function assertUploadSize(file: File, maxBytes = MAX_UPLOAD_BYTES): void 
   if (file.size > maxBytes) {
     throw new Error(
       `File "${file.name}" is too large (${formatBytes(file.size)}). Maximum allowed size is ${formatBytes(maxBytes)}.`,
+    );
+  }
+}
+
+export function assertBatchUploadSize(files: File[]): void {
+  if (files.length === 0) {
+    throw new Error("No files selected.");
+  }
+  if (files.length > MAX_UPLOAD_FILE_COUNT) {
+    throw new Error(
+      `Too many files (${files.length}). Maximum is ${MAX_UPLOAD_FILE_COUNT} files per upload.`,
+    );
+  }
+
+  let totalBytes = 0;
+  for (const file of files) {
+    assertUploadSize(file);
+    totalBytes += file.size;
+  }
+
+  if (totalBytes > MAX_TOTAL_UPLOAD_BYTES) {
+    throw new Error(
+      `Combined upload size (${formatBytes(totalBytes)}) exceeds the maximum (${formatBytes(MAX_TOTAL_UPLOAD_BYTES)}). Remove some files or use smaller exports.`,
     );
   }
 }

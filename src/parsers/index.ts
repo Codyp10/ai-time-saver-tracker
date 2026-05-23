@@ -7,6 +7,7 @@ import { parseGrokExport } from "./grok";
 import { parseGeminiExport } from "./gemini";
 import { ParseError, userFacingError } from "./errors";
 import {
+  assertBatchUploadSize,
   assertUploadSize,
   readArrayBufferWithLimit,
   readTextWithLimit,
@@ -18,8 +19,21 @@ import {
   detectPlatformFromJsonFilename,
   detectPlatformFromJsonSample,
 } from "./detectPlatform";
+import {
+  countByPlatform,
+  mergeConversations,
+  type MergeResult,
+} from "./merge";
 
 export { userFacingError, ParseError };
+export {
+  mergeConversations,
+  countByPlatform,
+  formatPlatformBreakdown,
+  formatUploadSummary,
+  PLATFORM_LABELS,
+} from "./merge";
+export type { MergeResult } from "./merge";
 
 export interface ParseResult {
   platform: Platform;
@@ -27,10 +41,64 @@ export interface ParseResult {
   warnings: string[];
 }
 
+export interface FileParseOutcome {
+  fileName: string;
+  success: boolean;
+  result?: ParseResult;
+  error?: string;
+}
+
+export interface MultiParseResult {
+  conversations: NormalizedConversation[];
+  outcomes: FileParseOutcome[];
+  warnings: string[];
+  merge: MergeResult;
+  filesParsed: number;
+  filesFailed: number;
+  byPlatform: Partial<Record<Platform, number>>;
+}
+
 const LOCAL_FILE_PLATFORMS: Platform[] = ["cursor", "claude_code"];
 
 export async function parseUploadFile(file: File): Promise<ParseResult> {
   return withTimeout(parseUploadFileInner(file), undefined, "Parsing");
+}
+
+export async function parseMultipleUploadFiles(files: File[]): Promise<MultiParseResult> {
+  assertBatchUploadSize(files);
+
+  const outcomes: FileParseOutcome[] = [];
+  const allConversations: NormalizedConversation[] = [];
+  const warnings: string[] = [];
+
+  for (const file of files) {
+    try {
+      const result = await parseUploadFile(file);
+      outcomes.push({ fileName: file.name, success: true, result });
+      allConversations.push(...result.conversations);
+      warnings.push(...result.warnings);
+    } catch (err) {
+      outcomes.push({
+        fileName: file.name,
+        success: false,
+        error: userFacingError(err),
+      });
+    }
+  }
+
+  const merge = mergeConversations(allConversations);
+  const filesParsed = outcomes.filter((o) => o.success).length;
+  const filesFailed = outcomes.filter((o) => !o.success).length;
+
+  return {
+    conversations: merge.merged,
+    outcomes,
+    warnings,
+    merge,
+    filesParsed,
+    filesFailed,
+    byPlatform: countByPlatform(merge.merged),
+  };
 }
 
 async function parseUploadFileInner(file: File): Promise<ParseResult> {
@@ -213,6 +281,20 @@ export function filterConversationsByMonth(
     const d = c.updatedAt;
     return d.getFullYear() === year && d.getMonth() === month - 1;
   });
+}
+
+export type MonthFilterOutcome = "empty_export" | "month_mismatch" | "matched";
+
+export function classifyMonthFilter(
+  conversations: NormalizedConversation[],
+  year: number,
+  month: number,
+): MonthFilterOutcome {
+  if (conversations.length === 0) return "empty_export";
+  if (filterConversationsByMonth(conversations, year, month).length === 0) {
+    return "month_mismatch";
+  }
+  return "matched";
 }
 
 export { LOCAL_FILE_PLATFORMS };

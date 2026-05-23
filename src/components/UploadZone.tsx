@@ -85,10 +85,10 @@ export function UploadZone({ onFiles, disabled }: UploadZoneProps) {
         </div>
         <h3 className="text-xl sm:text-2xl font-bold mb-3">Drop your export files here</h3>
         <p className="text-text-muted max-w-md mx-auto">
-          ChatGPT, Claude, Grok, or Gemini ZIPs — plus Claude Code (.jsonl) and Cursor (.db).
+          Multiple files supported — e.g. Claude zip, ChatGPT export, and Cursor log together.
         </p>
         <p className="text-wrap-500/60 text-sm mt-4 font-medium">
-          Parsed on your device; nothing is uploaded. Max file size 200 MB.
+          Parsed on your device; nothing is uploaded. Up to 20 files, 200 MB each.
         </p>
       </div>
     </label>

@@ -2,9 +2,11 @@ import { useEffect, useState } from "react";
 import { WrappedReport } from "@/components/WrappedReport";
 import { ConversationTable } from "@/components/ConversationTable";
 import type { MonthlyReport } from "@/types/conversation";
+import { InsightsPanel } from "@/components/InsightsPanel";
 import {
   getReport,
   getSettings,
+  listReports,
   serializeReportForExport,
 } from "@/storage/db";
 import { formatMonthLabel } from "@/utils/month";
@@ -21,6 +23,7 @@ export default function ReportView({ monthKey: monthKeyProp }: ReportViewProps) 
   const [occupationId, setOccupationId] = useState<string | undefined>();
   const [copied, setCopied] = useState(false);
   const [loaded, setLoaded] = useState(false);
+  const [history, setHistory] = useState<MonthlyReport[]>([]);
 
   useEffect(() => {
     if (monthKeyProp) {
@@ -45,6 +48,7 @@ export default function ReportView({ monthKey: monthKeyProp }: ReportViewProps) 
       setHourlyRate(s.hourlyRate);
       setOccupationId(s.occupation);
     });
+    listReports().then(setHistory);
   }, [monthKey]);
 
   async function handleCopySummary() {
@@ -115,6 +119,7 @@ export default function ReportView({ monthKey: monthKeyProp }: ReportViewProps) 
       </div>
 
       <WrappedReport report={report} hourlyRate={hourlyRate} occupationId={occupationId} />
+      <InsightsPanel report={report} history={history} />
       <div className="conversation-table-section">
         <ConversationTable analyses={report.analyses} />
       </div>

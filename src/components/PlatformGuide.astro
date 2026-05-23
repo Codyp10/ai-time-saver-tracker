@@ -7,12 +7,7 @@ import { exportGuides } from "@/data/exportGuides";
   <div class="space-y-3">
     {
       exportGuides.map((guide) => (
-        <details
-          class:list={[
-            "group bg-surface-800/30 border rounded-xl overflow-hidden open:pb-4",
-            guide.highlight ? "border-wrap-500/40" : "border-white/10 hover:border-wrap-500/50",
-          ]}
-        >
+        <details class="group bg-surface-800/30 border border-white/10 hover:border-wrap-500/50 rounded-xl overflow-hidden open:pb-4">
           <summary class="list-none cursor-pointer p-6 flex justify-between items-center hover:bg-white/[0.02] transition-colors [&::-webkit-details-marker]:hidden">
             <span class="text-lg font-medium">{guide.platform}</span>
             <span

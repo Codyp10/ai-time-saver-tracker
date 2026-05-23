@@ -1,3 +1,8 @@
+export function getCurrentMonth(): { year: number; month: number } {
+  const now = new Date();
+  return { year: now.getFullYear(), month: now.getMonth() + 1 };
+}
+
 export function getPreviousMonth(): { year: number; month: number } {
   const now = new Date();
   const d = new Date(now.getFullYear(), now.getMonth() - 1, 1);
