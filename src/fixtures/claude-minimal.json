@@ -1,0 +1,22 @@
+[
+  {
+    "uuid": "conv-claude-1",
+    "name": "Draft quarterly update",
+    "created_at": "2025-04-10T10:00:00.000Z",
+    "updated_at": "2025-04-10T10:05:00.000Z",
+    "chat_messages": [
+      {
+        "uuid": "msg-1",
+        "sender": "human",
+        "created_at": "2025-04-10T10:00:00.000Z",
+        "text": "Help me draft a quarterly update email"
+      },
+      {
+        "uuid": "msg-2",
+        "sender": "assistant",
+        "created_at": "2025-04-10T10:05:00.000Z",
+        "content": [{ "type": "text", "text": "Here is a draft you can adapt." }]
+      }
+    ]
+  }
+]

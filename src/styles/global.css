@@ -1,5 +1,10 @@
 @import "../index.css";
 
-body.flow-active #landing-static {
+body.flow-active #landing-marketing,
+body.flow-active #landing-more {
+  display: none;
+}
+
+body.flow-active #upload-flow > div:first-child {
   display: none;
 }

@@ -12,8 +12,12 @@ export function detectPlatformFromEntries(entries: ZipEntry[]): Platform | null 
     const hasChatMessages = entries.some((e) => {
       if (!e.path.toLowerCase().endsWith("conversations.json")) return false;
       try {
-        const text = new TextDecoder().decode(e.data.slice(0, 5000));
-        return text.includes('"chat_messages"');
+        const text = new TextDecoder().decode(e.data.slice(0, 8000));
+        return (
+          text.includes('"chat_messages"') ||
+          text.includes('"sender":"human"') ||
+          text.includes('"sender": "human"')
+        );
       } catch {
         return false;
       }

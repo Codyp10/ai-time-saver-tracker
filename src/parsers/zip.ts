@@ -1,4 +1,5 @@
 import { unzip } from "fflate";
+import { ParseError } from "./errors";
 
 export interface ZipEntry {
   path: string;
@@ -7,16 +8,30 @@ export interface ZipEntry {
 
 export async function extractZip(file: File): Promise<ZipEntry[]> {
   const buffer = await file.arrayBuffer();
-  const entries = await new Promise<Record<string, Uint8Array>>((resolve, reject) => {
-    unzip(new Uint8Array(buffer), (err, data) => {
-      if (err) reject(err);
-      else resolve(data);
+  let entries: Record<string, Uint8Array>;
+  try {
+    entries = await new Promise<Record<string, Uint8Array>>((resolve, reject) => {
+      unzip(new Uint8Array(buffer), (err, data) => {
+        if (err) reject(err);
+        else resolve(data);
+      });
     });
-  });
+  } catch {
+    throw new ParseError(
+      "Could not open ZIP file. Make sure it is a valid export archive.",
+      "INVALID_ZIP",
+    );
+  }
 
-  return Object.entries(entries)
+  const result = Object.entries(entries)
     .filter(([path]) => !path.endsWith("/"))
     .map(([path, data]) => ({ path, data }));
+
+  if (result.length === 0) {
+    throw new ParseError("ZIP file is empty.", "INVALID_ZIP");
+  }
+
+  return result;
 }
 
 export function findEntry(
@@ -31,5 +46,12 @@ export function decodeText(data: Uint8Array): string {
 }
 
 export function parseJson<T>(text: string): T {
-  return JSON.parse(text) as T;
+  try {
+    return JSON.parse(text) as T;
+  } catch {
+    throw new ParseError(
+      "Could not read JSON in export file. The file may be corrupted or incomplete.",
+      "INVALID_JSON",
+    );
+  }
 }

@@ -42,6 +42,7 @@ const jsonLd = {
 <BaseLayout isLanding title={`${brand.name} — Your Month in AI`} description={brand.description}>
   <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} slot="head" />
   <div id="landing-static" class="pb-8">
+    <div id="landing-marketing">
     <section class="max-w-4xl mx-auto text-center min-h-[85vh] flex flex-col justify-center items-center py-20">
       <h1 class="text-5xl sm:text-6xl md:text-8xl lg:text-9xl font-black tracking-tighter leading-none">
         {brand.heroHeadline}
@@ -90,8 +91,9 @@ const jsonLd = {
         }
       </div>
     </section>
+    </div>
 
-    <section class="max-w-3xl mx-auto pb-16 sm:pb-32" aria-label="Upload your exports">
+    <section id="upload-flow" class="max-w-3xl mx-auto pb-16 sm:pb-32" aria-label="Upload your exports">
       <div class="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-6">
         <div>
           <h2 class="text-2xl font-bold">Get your wrap</h2>
@@ -101,6 +103,7 @@ const jsonLd = {
       <HomeUpload client:load />
     </section>
 
+    <div id="landing-more">
     <SponsorSlot client:load />
 
     <section class="max-w-3xl mx-auto mt-12 sm:mt-20 pt-12 sm:pt-20 border-t border-white/5">
@@ -130,5 +133,6 @@ const jsonLd = {
     <PlatformGuide />
 
     <SupportProject />
+    </div>
   </div>
 </BaseLayout>

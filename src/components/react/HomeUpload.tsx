@@ -42,6 +42,11 @@ export default function HomeUpload() {
     return () => document.body.classList.remove("flow-active");
   }, [step]);
 
+  useEffect(() => {
+    if (step === "upload") return;
+    document.getElementById("upload-flow")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [step]);
+
   async function handleFiles(files: File[]) {
     setError(null);
     setWarnings([]);
@@ -123,7 +128,7 @@ export default function HomeUpload() {
 
   if (step !== "upload") {
     return (
-      <div className="max-w-3xl mx-auto py-12 space-y-10">
+      <div className="max-w-3xl mx-auto py-12 space-y-10 min-h-[50vh]">
         {step === "occupation" && (
           <>
             <p className="text-center text-slate-300">
@@ -151,13 +156,35 @@ export default function HomeUpload() {
                 );
               }}
             />
-            {error && <p className="text-center text-red-400">{error}</p>}
+            {error && (
+              <p className="text-center text-red-400 bg-red-950/30 rounded-lg p-3">{error}</p>
+            )}
           </>
         )}
 
         {step === "processing" && (
-          <p className="text-center text-wrap-500 text-lg animate-pulse">
-            {brand.processingMessage}
+          <>
+            <p className="text-center text-wrap-500 text-lg animate-pulse">
+              {brand.processingMessage}
+            </p>
+            {error && (
+              <p className="text-center text-red-400 bg-red-950/30 rounded-lg p-3">{error}</p>
+            )}
+          </>
+        )}
+
+        {step !== "processing" && (
+          <p className="text-center">
+            <button
+              type="button"
+              onClick={() => {
+                setStep("upload");
+                setError(null);
+              }}
+              className="text-sm text-slate-400 hover:text-white transition-colors"
+            >
+              ← Back to upload
+            </button>
           </p>
         )}
       </div>

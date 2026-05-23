@@ -56,4 +56,10 @@ export const brand = {
     coffeeUrl: "https://ko-fi.com/theaiwrapped",
     coffeeLabel: "Buy me a coffee",
   },
+  github: {
+    repoUrl: "https://github.com/Codyp10/ai-time-saver-tracker",
+    issuesUrl: "https://github.com/Codyp10/ai-time-saver-tracker/issues/new",
+    reportCopy: "Found a bug or upload issue?",
+    reportLinkLabel: "Report it on GitHub",
+  },
 } as const;
