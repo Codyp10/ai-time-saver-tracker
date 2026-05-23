@@ -202,7 +202,7 @@ export default function HomeUpload() {
             <select
               value={month}
               onChange={(e) => setMonth(Number(e.target.value))}
-              className="bg-surface-800 border border-white/10 rounded-lg text-white px-4 py-2 focus:ring-wrap-500 focus:border-wrap-500"
+              className="min-h-11 bg-surface-800 border border-white/10 rounded-lg text-white px-4 py-2.5 focus:ring-wrap-500 focus:border-wrap-500"
             >
               {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
                 <option key={m} value={m}>
@@ -218,7 +218,7 @@ export default function HomeUpload() {
             <select
               value={year}
               onChange={(e) => setYear(Number(e.target.value))}
-              className="bg-surface-800 border border-white/10 rounded-lg text-white px-4 py-2 focus:ring-wrap-500 focus:border-wrap-500"
+              className="min-h-11 bg-surface-800 border border-white/10 rounded-lg text-white px-4 py-2.5 focus:ring-wrap-500 focus:border-wrap-500"
             >
               {yearOptions.map((y) => (
                 <option key={y} value={y}>

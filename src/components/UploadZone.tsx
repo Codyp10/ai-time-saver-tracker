@@ -88,7 +88,7 @@ export function UploadZone({ onFiles, disabled }: UploadZoneProps) {
           ChatGPT, Claude, Grok, or Gemini ZIPs — plus Claude Code (.jsonl) and Cursor (.db).
         </p>
         <p className="text-wrap-500/60 text-sm mt-4 font-medium">
-          Parsed on your device; nothing is uploaded.
+          Parsed on your device; nothing is uploaded. Max file size 200 MB.
         </p>
       </div>
     </label>

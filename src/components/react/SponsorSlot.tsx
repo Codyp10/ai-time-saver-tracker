@@ -44,7 +44,7 @@ export default function SponsorSlot() {
           <button
             type="button"
             onClick={() => setOpen(true)}
-            className="shrink-0 text-wrap-500 text-sm font-semibold flex items-center gap-1 whitespace-nowrap border border-wrap-500/30 hover:border-wrap-500/60 rounded-full px-4 py-2 transition-colors"
+            className="shrink-0 min-h-11 text-wrap-500 text-sm font-semibold flex items-center gap-1 whitespace-nowrap border border-wrap-500/30 hover:border-wrap-500/60 rounded-full px-4 py-2.5 transition-colors"
           >
             {sponsor.ctaLabel}
             <span className="material-symbols-outlined text-xs" aria-hidden="true">

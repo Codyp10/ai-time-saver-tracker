@@ -36,7 +36,7 @@ export default function SettingsView() {
               setSettings((s) => ({ ...s, openaiApiKey: e.target.value || undefined }))
             }
             placeholder="sk-..."
-            className="w-full bg-surface-800 border border-white/10 rounded-lg px-3 py-2 text-white"
+            className="w-full min-h-11 bg-surface-800 border border-white/10 rounded-lg px-3 py-2.5 text-white"
             autoComplete="off"
           />
         </fieldset>
@@ -48,7 +48,7 @@ export default function SettingsView() {
           <select
             value={settings.occupation ?? "other"}
             onChange={(e) => setSettings((s) => ({ ...s, occupation: e.target.value }))}
-            className="w-full bg-surface-800 border border-white/10 rounded-lg px-3 py-2 text-white"
+            className="w-full min-h-11 bg-surface-800 border border-white/10 rounded-lg px-3 py-2.5 text-white"
           >
             {OCCUPATIONS.map((o) => (
               <option key={o.id} value={o.id}>
@@ -72,7 +72,7 @@ export default function SettingsView() {
                 hourlyRate: e.target.value ? Number(e.target.value) : undefined,
               }))
             }
-            className="w-full bg-surface-800 border border-white/10 rounded-lg px-3 py-2 text-white"
+            className="w-full min-h-11 bg-surface-800 border border-white/10 rounded-lg px-3 py-2.5 text-white"
           />
         </fieldset>
 
@@ -86,7 +86,7 @@ export default function SettingsView() {
                 skillLevel: e.target.value as SkillLevel,
               }))
             }
-            className="w-full bg-surface-800 border border-white/10 rounded-lg px-3 py-2 text-white"
+            className="w-full min-h-11 bg-surface-800 border border-white/10 rounded-lg px-3 py-2.5 text-white"
           >
             <option value="novice">Novice</option>
             <option value="intermediate">Intermediate</option>
@@ -97,7 +97,7 @@ export default function SettingsView() {
 
         <button
           type="submit"
-          className="px-6 py-2.5 rounded-full bg-wrap-600 hover:bg-wrap-500 text-black font-medium"
+          className="min-h-11 px-6 py-2.5 rounded-full bg-wrap-600 hover:bg-wrap-500 text-black font-medium"
         >
           Save settings
         </button>

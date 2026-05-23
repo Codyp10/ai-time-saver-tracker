@@ -1,4 +1,10 @@
 import { unzip } from "fflate";
+import {
+  MAX_UNCOMPRESSED_BYTES,
+  MAX_ZIP_ENTRIES,
+  MAX_ZIP_ENTRY_BYTES,
+  formatBytes,
+} from "@/config/securityLimits";
 import { ParseError } from "./errors";
 
 export interface ZipEntry {
@@ -6,8 +12,40 @@ export interface ZipEntry {
   data: Uint8Array;
 }
 
-export async function extractZip(file: File): Promise<ZipEntry[]> {
-  const buffer = await file.arrayBuffer();
+function validateZipEntries(entries: Record<string, Uint8Array>): void {
+  const paths = Object.keys(entries).filter((p) => !p.endsWith("/"));
+
+  if (paths.length === 0) {
+    throw new ParseError("ZIP file is empty.", "INVALID_ZIP");
+  }
+
+  if (paths.length > MAX_ZIP_ENTRIES) {
+    throw new ParseError(
+      `ZIP contains too many files (${paths.length.toLocaleString()}). Maximum is ${MAX_ZIP_ENTRIES.toLocaleString()}.`,
+      "ZIP_TOO_LARGE",
+    );
+  }
+
+  let totalUncompressed = 0;
+  for (const path of paths) {
+    const size = entries[path]!.byteLength;
+    if (size > MAX_ZIP_ENTRY_BYTES) {
+      throw new ParseError(
+        `File "${path}" in ZIP is too large (${formatBytes(size)}). Maximum per file is ${formatBytes(MAX_ZIP_ENTRY_BYTES)}.`,
+        "ZIP_TOO_LARGE",
+      );
+    }
+    totalUncompressed += size;
+    if (totalUncompressed > MAX_UNCOMPRESSED_BYTES) {
+      throw new ParseError(
+        `ZIP uncompressed content exceeds ${formatBytes(MAX_UNCOMPRESSED_BYTES)}. This may be a zip bomb or an unusually large export — try splitting your export.`,
+        "ZIP_TOO_LARGE",
+      );
+    }
+  }
+}
+
+export async function extractZip(buffer: ArrayBuffer): Promise<ZipEntry[]> {
   let entries: Record<string, Uint8Array>;
   try {
     entries = await new Promise<Record<string, Uint8Array>>((resolve, reject) => {
@@ -23,15 +61,11 @@ export async function extractZip(file: File): Promise<ZipEntry[]> {
     );
   }
 
-  const result = Object.entries(entries)
+  validateZipEntries(entries);
+
+  return Object.entries(entries)
     .filter(([path]) => !path.endsWith("/"))
     .map(([path, data]) => ({ path, data }));
-
-  if (result.length === 0) {
-    throw new ParseError("ZIP file is empty.", "INVALID_ZIP");
-  }
-
-  return result;
 }
 
 export function findEntry(

@@ -53,8 +53,7 @@ describe("Claude ZIP detection", () => {
       "conversations.json": new TextEncoder().encode(JSON.stringify(fixture)),
       "users.json": new TextEncoder().encode("{}"),
     });
-    const file = new File([zipBytes], "claude-export.zip", { type: "application/zip" });
-    const entries = await extractZip(file);
+    const entries = await extractZip(zipBytes.buffer);
     expect(detectPlatformFromEntries(entries)).toBe("claude");
     const conversationsJson = entries.find((e) => e.path.endsWith("conversations.json"));
     expect(parseClaudeExport(JSON.parse(decodeText(conversationsJson!.data)))).toHaveLength(1);

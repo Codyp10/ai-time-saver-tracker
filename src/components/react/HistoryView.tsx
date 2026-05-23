@@ -1,4 +1,9 @@
 import { useEffect, useRef, useState } from "react";
+import {
+  assertUploadSize,
+  MAX_REPORT_IMPORT_BYTES,
+  readTextWithLimit,
+} from "@/config/securityLimits";
 import type { MonthlyReport } from "@/types/conversation";
 import {
   deleteReport,
@@ -113,7 +118,8 @@ export default function HistoryView() {
     setImportError(null);
     setImportSuccess(null);
     try {
-      const text = await file.text();
+      assertUploadSize(file, MAX_REPORT_IMPORT_BYTES);
+      const text = await readTextWithLimit(file, MAX_REPORT_IMPORT_BYTES);
       const report = deserializeReport(text);
       if (!report.monthKey || !report.totals) {
         throw new Error("Invalid report format.");
@@ -153,7 +159,7 @@ export default function HistoryView() {
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            className="px-4 py-2 rounded-full border border-white/20 text-sm text-slate-300 hover:bg-white/10"
+            className="min-h-11 px-4 py-2.5 rounded-full border border-white/20 text-sm text-slate-300 hover:bg-white/10"
           >
             Import report
           </button>
@@ -199,14 +205,14 @@ export default function HistoryView() {
                 <button
                   type="button"
                   onClick={() => handleExport(r)}
-                  className="text-sm text-wrap-500 hover:text-wrap-400"
+                  className="min-h-11 inline-flex items-center px-2 text-sm text-wrap-500 hover:text-wrap-400"
                 >
                   Export
                 </button>
                 <button
                   type="button"
                   onClick={() => handleDelete(r.monthKey)}
-                  className="text-sm text-red-400 hover:text-red-300"
+                  className="min-h-11 inline-flex items-center px-2 text-sm text-red-400 hover:text-red-300"
                 >
                   Delete
                 </button>

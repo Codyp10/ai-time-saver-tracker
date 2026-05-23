@@ -94,21 +94,21 @@ export default function ReportView({ monthKey: monthKeyProp }: ReportViewProps) 
         <button
           type="button"
           onClick={handleCopySummary}
-          className="px-4 py-2 rounded-full border border-white/20 text-sm text-slate-300 hover:bg-white/10"
+          className="min-h-11 px-4 py-2.5 rounded-full border border-white/20 text-sm text-slate-300 hover:bg-white/10"
         >
           {copied ? "Copied!" : "Copy summary"}
         </button>
         <button
           type="button"
           onClick={handlePrint}
-          className="px-4 py-2 rounded-full border border-white/20 text-sm text-slate-300 hover:bg-white/10"
+          className="min-h-11 px-4 py-2.5 rounded-full border border-white/20 text-sm text-slate-300 hover:bg-white/10"
         >
           Print / Save PDF
         </button>
         <button
           type="button"
           onClick={handleExport}
-          className="px-4 py-2 rounded-full border border-white/20 text-sm text-slate-300 hover:bg-white/10"
+          className="min-h-11 px-4 py-2.5 rounded-full border border-white/20 text-sm text-slate-300 hover:bg-white/10"
         >
           Export JSON
         </button>

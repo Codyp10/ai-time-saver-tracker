@@ -6,6 +6,12 @@ import { parseCursorJsonExport, parseCursorSqlite } from "./cursor";
 import { parseGrokExport } from "./grok";
 import { parseGeminiExport } from "./gemini";
 import { ParseError, userFacingError } from "./errors";
+import {
+  assertUploadSize,
+  readArrayBufferWithLimit,
+  readTextWithLimit,
+  withTimeout,
+} from "@/config/securityLimits";
 import { decodeText, extractZip, findEntry, parseJson } from "./zip";
 import {
   detectPlatformFromEntries,
@@ -24,8 +30,13 @@ export interface ParseResult {
 const LOCAL_FILE_PLATFORMS: Platform[] = ["cursor", "claude_code"];
 
 export async function parseUploadFile(file: File): Promise<ParseResult> {
+  return withTimeout(parseUploadFileInner(file), undefined, "Parsing");
+}
+
+async function parseUploadFileInner(file: File): Promise<ParseResult> {
   const warnings: string[] = [];
   const name = file.name.toLowerCase();
+  assertUploadSize(file);
 
   if (name.endsWith(".zip")) {
     return parseZipFile(file, warnings);
@@ -33,7 +44,7 @@ export async function parseUploadFile(file: File): Promise<ParseResult> {
 
   if (name.endsWith(".jsonl")) {
     warnings.push("Claude Code sessions are parsed from local JSONL — data stays in your browser.");
-    const text = await file.text();
+    const text = await readTextWithLimit(file);
     return {
       platform: "claude_code",
       conversations: parseClaudeCodeJsonl(text, file.name),
@@ -45,7 +56,7 @@ export async function parseUploadFile(file: File): Promise<ParseResult> {
     warnings.push(
       "Cursor databases are parsed locally in your browser. They may contain file paths from your projects.",
     );
-    const buffer = new Uint8Array(await file.arrayBuffer());
+    const buffer = new Uint8Array(await readArrayBufferWithLimit(file));
     return {
       platform: "cursor",
       conversations: await parseCursorSqlite(buffer),
@@ -54,7 +65,7 @@ export async function parseUploadFile(file: File): Promise<ParseResult> {
   }
 
   if (name.endsWith(".json")) {
-    const text = await file.text();
+    const text = await readTextWithLimit(file);
     const json = parseJson<unknown>(text);
     const fromName = detectPlatformFromJsonFilename(file.name);
     const fromSample = detectPlatformFromJsonSample(json);
@@ -101,7 +112,8 @@ export async function parseUploadFile(file: File): Promise<ParseResult> {
 }
 
 async function parseZipFile(file: File, warnings: string[]): Promise<ParseResult> {
-  const entries = await extractZip(file);
+  const buffer = await readArrayBufferWithLimit(file);
+  const entries = await extractZip(buffer);
   let platform = detectPlatformFromEntries(entries);
 
   if (!platform) {
