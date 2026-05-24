@@ -71,19 +71,45 @@ export function unwrapClaudeExport(json: unknown): ClaudeConversation[] {
   );
 }
 
-export function parseClaudeExport(json: unknown): NormalizedConversation[] {
-  const conversations = unwrapClaudeExport(json)
-    .map(parseConversation)
-    .filter((c): c is NormalizedConversation => c !== null);
+const CONVERSATION_BATCH_SIZE = 100;
 
+function finalizeClaudeConversations(conversations: NormalizedConversation[]): NormalizedConversation[] {
   if (conversations.length === 0) {
     throw new ParseError(
       "No readable Claude conversations found. Messages may use an unsupported format.",
       "INVALID_FORMAT",
     );
   }
-
   return conversations;
+}
+
+export function parseClaudeExport(json: unknown): NormalizedConversation[] {
+  const conversations = unwrapClaudeExport(json)
+    .map(parseConversation)
+    .filter((c): c is NormalizedConversation => c !== null);
+
+  return finalizeClaudeConversations(conversations);
+}
+
+/** Parse large Claude exports in batches, yielding so the UI stays responsive. */
+export async function parseClaudeExportAsync(json: unknown): Promise<NormalizedConversation[]> {
+  const raw = unwrapClaudeExport(json);
+  const conversations: NormalizedConversation[] = [];
+
+  for (let i = 0; i < raw.length; i += CONVERSATION_BATCH_SIZE) {
+    const batch = raw.slice(i, i + CONVERSATION_BATCH_SIZE);
+    for (const item of batch) {
+      const parsed = parseConversation(item);
+      if (parsed) conversations.push(parsed);
+    }
+    if (i + CONVERSATION_BATCH_SIZE < raw.length) {
+      await new Promise<void>((resolve) => {
+        setTimeout(resolve, 0);
+      });
+    }
+  }
+
+  return finalizeClaudeConversations(conversations);
 }
 
 function parseConversation(raw: ClaudeConversation): NormalizedConversation | null {

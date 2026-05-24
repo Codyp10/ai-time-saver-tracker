@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import fixture from "@/fixtures/claude-minimal.json";
-import { parseClaudeExport, unwrapClaudeExport } from "./claude";
+import { parseClaudeExport, parseClaudeExportAsync } from "./claude";
 import { detectPlatformFromEntries } from "./detectPlatform";
 import { decodeText, extractZip } from "./zip";
 import { unzipSync, zipSync } from "fflate";
@@ -43,7 +43,13 @@ describe("parseClaudeExport", () => {
 
   it("unwraps nested conversation arrays", () => {
     const wrapped = { conversations: fixture };
-    expect(unwrapClaudeExport(wrapped)).toHaveLength(1);
+    expect(parseClaudeExport(wrapped)).toHaveLength(1);
+  });
+
+  it("parseClaudeExportAsync matches sync output", async () => {
+    const sync = parseClaudeExport(fixture);
+    const asyncResult = await parseClaudeExportAsync(fixture);
+    expect(asyncResult).toEqual(sync);
   });
 });
 

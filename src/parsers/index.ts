@@ -1,6 +1,6 @@
 import type { NormalizedConversation, Platform } from "@/types/conversation";
 import { parseChatGPTExport } from "./chatgpt";
-import { parseClaudeExport } from "./claude";
+import { parseClaudeExport, parseClaudeExportAsync } from "./claude";
 import { parseClaudeCodeExport, parseClaudeCodeJsonl } from "./claude-code";
 import { parseCursorJsonExport, parseCursorSqlite } from "./cursor";
 import { parseGrokExport } from "./grok";
@@ -9,15 +9,21 @@ import { ParseError, userFacingError } from "./errors";
 import {
   assertBatchUploadSize,
   assertUploadSize,
+  computeParseTimeoutMs,
+  formatBytes,
   readArrayBufferWithLimit,
   readTextWithLimit,
   withTimeout,
+  yieldToEventLoop,
 } from "@/config/securityLimits";
 import { decodeText, extractZip, findEntry, parseJson } from "./zip";
 import {
   detectPlatformFromEntries,
   detectPlatformFromJsonFilename,
   detectPlatformFromJsonSample,
+  exportJsonHasChatMessages,
+  exportJsonHasMapping,
+  resolveConversationsExportPlatform,
 } from "./detectPlatform";
 import {
   countByPlatform,
@@ -60,20 +66,47 @@ export interface MultiParseResult {
 
 const LOCAL_FILE_PLATFORMS: Platform[] = ["cursor", "claude_code"];
 
-export async function parseUploadFile(file: File): Promise<ParseResult> {
-  return withTimeout(parseUploadFileInner(file), undefined, "Parsing");
+export interface ParseProgress {
+  fileIndex: number;
+  fileCount: number;
+  fileName: string;
+  fileSizeBytes: number;
+  stage: string;
 }
 
-export async function parseMultipleUploadFiles(files: File[]): Promise<MultiParseResult> {
+export async function parseUploadFile(
+  file: File,
+  onStage?: (stage: string) => void,
+): Promise<ParseResult> {
+  return withTimeout(
+    parseUploadFileInner(file, onStage),
+    computeParseTimeoutMs(file.size),
+    `Parsing "${file.name}" (${formatBytes(file.size)})`,
+  );
+}
+
+export async function parseMultipleUploadFiles(
+  files: File[],
+  onProgress?: (progress: ParseProgress) => void,
+): Promise<MultiParseResult> {
   assertBatchUploadSize(files);
 
   const outcomes: FileParseOutcome[] = [];
   const allConversations: NormalizedConversation[] = [];
   const warnings: string[] = [];
 
-  for (const file of files) {
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i]!;
     try {
-      const result = await parseUploadFile(file);
+      const result = await parseUploadFile(file, (stage) => {
+        onProgress?.({
+          fileIndex: i + 1,
+          fileCount: files.length,
+          fileName: file.name,
+          fileSizeBytes: file.size,
+          stage,
+        });
+      });
       outcomes.push({ fileName: file.name, success: true, result });
       allConversations.push(...result.conversations);
       warnings.push(...result.warnings);
@@ -101,18 +134,23 @@ export async function parseMultipleUploadFiles(files: File[]): Promise<MultiPars
   };
 }
 
-async function parseUploadFileInner(file: File): Promise<ParseResult> {
+async function parseUploadFileInner(
+  file: File,
+  onStage?: (stage: string) => void,
+): Promise<ParseResult> {
   const warnings: string[] = [];
   const name = file.name.toLowerCase();
   assertUploadSize(file);
 
   if (name.endsWith(".zip")) {
-    return parseZipFile(file, warnings);
+    return parseZipFile(file, warnings, onStage);
   }
 
   if (name.endsWith(".jsonl")) {
+    onStage?.("Reading file");
     warnings.push("Claude Code sessions are parsed from local JSONL — data stays in your browser.");
     const text = await readTextWithLimit(file);
+    onStage?.("Parsing conversations");
     return {
       platform: "claude_code",
       conversations: parseClaudeCodeJsonl(text, file.name),
@@ -121,10 +159,12 @@ async function parseUploadFileInner(file: File): Promise<ParseResult> {
   }
 
   if (name.endsWith(".db") || name.endsWith(".vscdb")) {
+    onStage?.("Reading database");
     warnings.push(
       "Cursor databases are parsed locally in your browser. They may contain file paths from your projects.",
     );
     const buffer = new Uint8Array(await readArrayBufferWithLimit(file));
+    onStage?.("Parsing conversations");
     return {
       platform: "cursor",
       conversations: await parseCursorSqlite(buffer),
@@ -133,7 +173,9 @@ async function parseUploadFileInner(file: File): Promise<ParseResult> {
   }
 
   if (name.endsWith(".json")) {
+    onStage?.("Reading file");
     const text = await readTextWithLimit(file);
+    onStage?.("Parsing JSON");
     const json = parseJson<unknown>(text);
     const fromName = detectPlatformFromJsonFilename(file.name);
     const fromSample = detectPlatformFromJsonSample(json);
@@ -156,19 +198,22 @@ async function parseUploadFileInner(file: File): Promise<ParseResult> {
 
     const platform = fromName ?? fromSample;
     if (!platform) {
-      const sample = JSON.stringify(json).slice(0, 2000);
-      if (sample.includes('"chat_messages"')) {
-        return { platform: "claude", conversations: parseClaudeExport(json), warnings };
+      if (exportJsonHasChatMessages(json)) {
+        onStage?.("Parsing conversations");
+        return { platform: "claude", conversations: await parseClaudeExportAsync(json), warnings };
       }
-      if (sample.includes('"mapping"')) {
+      if (exportJsonHasMapping(json)) {
+        onStage?.("Parsing conversations");
         return { platform: "chatgpt", conversations: parseChatGPTExport(json), warnings };
       }
+      onStage?.("Parsing conversations");
       return { platform: "grok", conversations: parseGrokExport(json), warnings };
     }
 
+    onStage?.("Parsing conversations");
     return {
       platform,
-      conversations: parseByPlatform(platform, json),
+      conversations: await parseByPlatform(platform, json),
       warnings,
     };
   }
@@ -179,8 +224,15 @@ async function parseUploadFileInner(file: File): Promise<ParseResult> {
   );
 }
 
-async function parseZipFile(file: File, warnings: string[]): Promise<ParseResult> {
+async function parseZipFile(
+  file: File,
+  warnings: string[],
+  onStage?: (stage: string) => void,
+): Promise<ParseResult> {
+  onStage?.("Reading file");
   const buffer = await readArrayBufferWithLimit(file);
+  onStage?.("Extracting ZIP");
+  await yieldToEventLoop();
   const entries = await extractZip(buffer);
   let platform = detectPlatformFromEntries(entries);
 
@@ -196,14 +248,14 @@ async function parseZipFile(file: File, warnings: string[]): Promise<ParseResult
     if (!entry) {
       throw new ParseError("conversations.json not found in ZIP.", "MISSING_FILE");
     }
+    onStage?.("Parsing conversations.json");
+    await yieldToEventLoop();
     const json = parseJson<unknown>(decodeText(entry.data));
-    if (platform === "claude" && !JSON.stringify(json).includes("chat_messages")) {
-      const hasMapping = JSON.stringify(json).includes('"mapping"');
-      if (hasMapping) platform = "chatgpt";
-    }
+    platform = resolveConversationsExportPlatform(json, platform);
+    onStage?.("Parsing conversations");
     return {
       platform,
-      conversations: parseByPlatform(platform, json),
+      conversations: await parseByPlatform(platform, json),
       warnings,
     };
   }
@@ -255,7 +307,7 @@ async function parseZipFile(file: File, warnings: string[]): Promise<ParseResult
   return { platform: "grok", conversations: parseGrokExport(json), warnings };
 }
 
-function parseByPlatform(platform: Platform, json: unknown): NormalizedConversation[] {
+function parseByPlatformSync(platform: Platform, json: unknown): NormalizedConversation[] {
   switch (platform) {
     case "chatgpt":
       return parseChatGPTExport(json);
@@ -270,6 +322,13 @@ function parseByPlatform(platform: Platform, json: unknown): NormalizedConversat
     case "cursor":
       return parseCursorJsonExport(json);
   }
+}
+
+async function parseByPlatform(platform: Platform, json: unknown): Promise<NormalizedConversation[]> {
+  if (platform === "claude") {
+    return parseClaudeExportAsync(json);
+  }
+  return parseByPlatformSync(platform, json);
 }
 
 export function filterConversationsByMonth(

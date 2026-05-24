@@ -10,7 +10,9 @@ import {
   formatUploadSummary,
   userFacingError,
   type MultiParseResult,
+  type ParseProgress,
 } from "@/parsers";
+import { formatBytes } from "@/config/securityLimits";
 import type { NormalizedConversation, Platform, QuizProfile, SkillLevel } from "@/types/conversation";
 import { formatMonthLabel, getCurrentMonth, getPreviousMonth, monthKey } from "@/utils/month";
 import { buildMonthlyReport } from "@/engine/aggregate";
@@ -39,6 +41,7 @@ export default function HomeUpload() {
   const [month, setMonth] = useState(defaultMonth.month);
   const [step, setStep] = useState<Step>("upload");
   const [loading, setLoading] = useState(false);
+  const [parseProgress, setParseProgress] = useState<ParseProgress | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [warnings, setWarnings] = useState<string[]>([]);
   const [parsed, setParsed] = useState<NormalizedConversation[]>([]);
@@ -136,9 +139,12 @@ export default function HomeUpload() {
     setUploadSummary(null);
     setPendingParse(null);
     setLoading(true);
+    setParseProgress(null);
 
     try {
-      const result = await parseMultipleUploadFiles(files);
+      const result = await parseMultipleUploadFiles(files, (progress) => {
+        setParseProgress(progress);
+      });
       setWarnings(result.warnings);
 
       if (result.filesParsed === 0) {
@@ -160,6 +166,7 @@ export default function HomeUpload() {
       setError(userFacingError(err));
     } finally {
       setLoading(false);
+      setParseProgress(null);
     }
   }
 
@@ -346,7 +353,11 @@ export default function HomeUpload() {
       <UploadZone onFiles={handleFiles} disabled={loading} />
 
       {loading && (
-        <p className="text-center text-wrap-500 animate-pulse mt-4">Parsing exports…</p>
+        <p className="text-center text-wrap-500 animate-pulse mt-4">
+          {parseProgress
+            ? `Parsing file ${parseProgress.fileIndex} of ${parseProgress.fileCount}: ${parseProgress.fileName} (${formatBytes(parseProgress.fileSizeBytes)}) — ${parseProgress.stage}…`
+            : "Parsing exports…"}
+        </p>
       )}
       {error && (
         <p className="text-center text-red-400 bg-red-950/30 rounded-lg p-3 mt-4">{error}</p>

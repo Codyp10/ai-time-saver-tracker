@@ -24,8 +24,37 @@ export const MAX_TEXT_FILE_BYTES = 100 * 1024 * 1024;
 /** Max imported report JSON size (50 MB). */
 export const MAX_REPORT_IMPORT_BYTES = 50 * 1024 * 1024;
 
-/** Abort parsing if it exceeds this duration (60 s). */
-export const PARSE_TIMEOUT_MS = 60_000;
+/** Default parse budget when file size is unknown (2 min). */
+export const PARSE_TIMEOUT_MS = 120_000;
+
+/** Minimum per-file parse budget (2 min). */
+export const PARSE_TIMEOUT_MIN_MS = 120_000;
+
+/** Maximum per-file parse budget (5 min) — caps runaway work on client. */
+export const PARSE_TIMEOUT_MAX_MS = 300_000;
+
+/** Base parse budget before file-size scaling. */
+export const PARSE_TIMEOUT_BASE_MS = 90_000;
+
+/** Extra milliseconds granted per MB of upload size. */
+export const PARSE_TIMEOUT_MS_PER_MB = 12_000;
+
+/** Compute a per-file parse timeout scaled to upload size (keeps zip-bomb caps; allows large exports). */
+export function computeParseTimeoutMs(fileSizeBytes: number): number {
+  const sizeMb = fileSizeBytes / (1024 * 1024);
+  const scaled = PARSE_TIMEOUT_BASE_MS + sizeMb * PARSE_TIMEOUT_MS_PER_MB;
+  return Math.min(
+    PARSE_TIMEOUT_MAX_MS,
+    Math.max(PARSE_TIMEOUT_MIN_MS, Math.round(scaled)),
+  );
+}
+
+/** Yield to the event loop so UI progress updates can paint during long sync work. */
+export function yieldToEventLoop(): Promise<void> {
+  return new Promise((resolve) => {
+    setTimeout(resolve, 0);
+  });
+}
 
 export function formatBytes(bytes: number): string {
   if (bytes >= 1024 * 1024) return `${Math.round(bytes / (1024 * 1024))} MB`;
@@ -83,7 +112,11 @@ export async function readArrayBufferWithLimit(
 export function withTimeout<T>(promise: Promise<T>, ms = PARSE_TIMEOUT_MS, label = "Parse"): Promise<T> {
   return new Promise((resolve, reject) => {
     const timer = setTimeout(() => {
-      reject(new Error(`${label} timed out after ${Math.round(ms / 1000)} seconds. Try a smaller export or fewer files.`));
+      reject(
+        new Error(
+          `${label} timed out after ${Math.round(ms / 1000)} seconds. Try a smaller export, fewer files, or close other browser tabs.`,
+        ),
+      );
     }, ms);
     promise.then(
       (value) => {

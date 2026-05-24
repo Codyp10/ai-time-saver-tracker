@@ -66,20 +66,68 @@ export function detectPlatformFromFilename(filename: string): Platform | null {
   return detectPlatformFromJsonFilename(filename);
 }
 
+function firstConversationRecord(json: unknown): Record<string, unknown> | null {
+  if (Array.isArray(json) && json.length > 0 && json[0] && typeof json[0] === "object") {
+    return json[0] as Record<string, unknown>;
+  }
+  if (json && typeof json === "object") {
+    const obj = json as Record<string, unknown>;
+    for (const key of ["conversations", "data", "items"]) {
+      const nested = obj[key];
+      if (Array.isArray(nested) && nested.length > 0 && nested[0] && typeof nested[0] === "object") {
+        return nested[0] as Record<string, unknown>;
+      }
+      if (nested && typeof nested === "object") {
+        const inner = (nested as Record<string, unknown>).conversations;
+        if (Array.isArray(inner) && inner.length > 0 && inner[0] && typeof inner[0] === "object") {
+          return inner[0] as Record<string, unknown>;
+        }
+      }
+    }
+  }
+  return null;
+}
+
+export function exportJsonHasChatMessages(json: unknown): boolean {
+  const first = firstConversationRecord(json);
+  return first !== null && "chat_messages" in first;
+}
+
+export function exportJsonHasMapping(json: unknown): boolean {
+  const first = firstConversationRecord(json);
+  return first !== null && "mapping" in first;
+}
+
+export function resolveConversationsExportPlatform(
+  json: unknown,
+  detected: "claude" | "chatgpt",
+): "claude" | "chatgpt" {
+  if (detected === "chatgpt") return "chatgpt";
+  if (exportJsonHasChatMessages(json)) return "claude";
+  if (exportJsonHasMapping(json)) return "chatgpt";
+  return detected;
+}
+
 export function detectPlatformFromJsonSample(json: unknown): Platform | null {
-  const sample = JSON.stringify(json).slice(0, 4000);
-  if (sample.includes('"chat_messages"')) return "claude";
-  if (sample.includes('"mapping"')) return "chatgpt";
-  if (sample.includes('"platform":"claude_code"')) return "claude_code";
-  if (sample.includes('"platform":"cursor"')) return "cursor";
+  if (exportJsonHasChatMessages(json)) return "claude";
+  if (exportJsonHasMapping(json)) return "chatgpt";
+
+  const first = firstConversationRecord(json);
+  if (first) {
+    if (first.platform === "claude_code") return "claude_code";
+    if (first.platform === "cursor") return "cursor";
+    if (Array.isArray(first.messages) && (first.lastUsedModel || first.model)) return "cursor";
+  }
+
   if (Array.isArray(json) && json.length > 0) {
-    const first = json[0];
-    if (first && typeof first === "object") {
-      const obj = first as Record<string, unknown>;
+    const item = json[0];
+    if (item && typeof item === "object") {
+      const obj = item as Record<string, unknown>;
       if (obj.platform === "claude_code") return "claude_code";
       if (obj.platform === "cursor") return "cursor";
       if (Array.isArray(obj.messages) && (obj.lastUsedModel || obj.model)) return "cursor";
     }
   }
+
   return null;
 }
