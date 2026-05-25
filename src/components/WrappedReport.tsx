@@ -30,7 +30,7 @@ function BreakdownBars({
   const max = filtered[0]![1] || 1;
 
   return (
-    <div className="rounded-xl border border-white/10 p-4 bg-white/5">
+    <div className="insight-panel-card rounded-xl border border-white/10 p-4 bg-white/5">
       <h3 className="font-semibold text-white mb-3">{title}</h3>
       <ul className="space-y-3">
         {filtered.map(([key, value]) => {
@@ -172,7 +172,7 @@ export function WrappedReport({ report, hourlyRate, occupationId }: WrappedRepor
       </div>
 
       {Object.keys(convosByPlatform).length > 0 && (
-        <div className="rounded-xl border border-white/10 p-4 bg-white/5">
+        <div className="insight-panel-card rounded-xl border border-white/10 p-4 bg-white/5">
           <h3 className="font-semibold text-white mb-3">Conversations by platform</h3>
           <ul className="space-y-2">
             {Object.entries(convosByPlatform)
@@ -188,7 +188,7 @@ export function WrappedReport({ report, hourlyRate, occupationId }: WrappedRepor
       )}
 
       {modelEntries.length > 0 && (
-        <div className="rounded-xl border border-white/10 p-4 bg-white/5">
+        <div className="insight-panel-card rounded-xl border border-white/10 p-4 bg-white/5">
           <h3 className="font-semibold text-white mb-3">Model mix (ChatGPT)</h3>
           <ul className="space-y-2">
             {modelEntries.slice(0, 8).map(([model, count]) => (

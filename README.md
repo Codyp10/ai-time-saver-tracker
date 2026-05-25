@@ -40,6 +40,18 @@ npm run build
 npm test
 ```
 
+## Print / Save PDF
+
+The report page **Print / Save PDF** action uses the browser print dialog (`window.print()`). Print styles live in `src/index.css` (loaded via `src/styles/global.css`) and preserve the Wrapped dark theme:
+
+- **Background:** `#0a0a0a` with `print-color-adjust: exact` so browsers include background fills
+- **Accent:** wrap green (`#00ff41`) on headings, progress bars, saved-time values, and heatmap cells
+- **Hidden chrome:** site header/footer, action buttons, sort controls, and marketing CTAs (`.no-print`, `.site-header`, `.site-footer`)
+- **Kept content:** wrap hero, stat cards, insights (heatmap, topic mix, forecast), and conversation table
+- **Page breaks:** conversation table starts on a new page; third insight card can break to avoid cramped two-up layout
+
+Use **Background graphics** / **Print backgrounds** in the print dialog if your browser still strips fills.
+
 ## Deploy
 
 Static build — deploy `dist/` to Vercel, Netlify, or any static host:

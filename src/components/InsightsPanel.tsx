@@ -11,11 +11,11 @@ import {
 import { formatMonthLabel } from "@/utils/month";
 
 const HEATMAP_INTENSITY: Record<number, string> = {
-  0: "bg-white/5",
-  1: "bg-wrap-500/20",
-  2: "bg-wrap-500/40",
-  3: "bg-wrap-500/65",
-  4: "bg-wrap-500",
+  0: "heatmap-intensity-0 bg-white/5",
+  1: "heatmap-intensity-1 bg-wrap-500/20",
+  2: "heatmap-intensity-2 bg-wrap-500/40",
+  3: "heatmap-intensity-3 bg-wrap-500/65",
+  4: "heatmap-intensity-4 bg-wrap-500",
 };
 
 const WEEKDAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -24,13 +24,17 @@ function InsightCard({
   title,
   subtitle,
   children,
+  className,
 }: {
   title: string;
   subtitle?: string;
   children: ReactNode;
+  className?: string;
 }) {
   return (
-    <article className="rounded-2xl border border-white/10 bg-white/5 p-5 space-y-4 neon-glow-hover">
+    <article
+      className={`insight-panel-card rounded-2xl border border-white/10 bg-white/5 p-5 space-y-4 neon-glow-hover${className ? ` ${className}` : ""}`}
+    >
       <div>
         <h3 className="font-semibold text-white">{title}</h3>
         {subtitle && <p className="text-xs text-slate-400 mt-1">{subtitle}</p>}
@@ -84,37 +88,95 @@ function UsageHeatmap({ report }: { report: MonthlyReport }) {
     cells.push(null);
   }
 
-  return (
-    <div className="space-y-3">
-      <div className="grid grid-cols-7 gap-1 text-[10px] text-slate-500 text-center">
-        {WEEKDAY_LABELS.map((d) => (
-          <span key={d}>{d}</span>
+  const weeks: (typeof cells)[] = [];
+  for (let i = 0; i < cells.length; i += 7) {
+    weeks.push(cells.slice(i, i + 7));
+  }
+
+  const legend = (
+    <div className="usage-heatmap-legend flex items-center justify-between text-[10px] text-slate-500">
+      <span>Less</span>
+      <div className="flex gap-1">
+        {[0, 1, 2, 3, 4].map((level) => (
+          <div
+            key={level}
+            data-intensity={level}
+            className={`usage-heatmap-legend-swatch w-3 h-3 rounded-sm ${HEATMAP_INTENSITY[level]}`}
+          />
         ))}
       </div>
-      <div className="grid grid-cols-7 gap-1">
-        {cells.map((cell, i) =>
-          cell ? (
-            <div
-              key={cell.date}
-              title={`${cell.date}: ${cell.activity} message${cell.activity === 1 ? "" : "s"}`}
-              className={`aspect-square rounded-sm ${HEATMAP_INTENSITY[cell.intensity]} border border-white/5 flex items-center justify-center text-[9px] text-slate-400`}
-            >
-              {cell.dayOfMonth}
-            </div>
-          ) : (
-            <div key={`empty-${i}`} className="aspect-square" aria-hidden />
-          ),
-        )}
-      </div>
-      <div className="flex items-center justify-between text-[10px] text-slate-500">
-        <span>Less</span>
-        <div className="flex gap-1">
-          {[0, 1, 2, 3, 4].map((level) => (
-            <div key={level} className={`w-3 h-3 rounded-sm ${HEATMAP_INTENSITY[level]}`} />
+      <span>More</span>
+    </div>
+  );
+
+  return (
+    <div className="usage-heatmap space-y-3">
+      <div className="usage-heatmap-screen space-y-1">
+        <div className="usage-heatmap-weekdays grid grid-cols-7 gap-1 text-[10px] text-slate-500 text-center">
+          {WEEKDAY_LABELS.map((d) => (
+            <span key={d} className="usage-heatmap-weekday">
+              {d}
+            </span>
           ))}
         </div>
-        <span>More</span>
+        <div className="usage-heatmap-grid grid grid-cols-7 gap-1">
+          {cells.map((cell, i) =>
+            cell ? (
+              <div
+                key={cell.date}
+                data-intensity={cell.intensity}
+                title={`${cell.date}: ${cell.activity} message${cell.activity === 1 ? "" : "s"}`}
+                className={`usage-heatmap-cell rounded-sm ${HEATMAP_INTENSITY[cell.intensity]} border border-white/5`}
+              >
+                <span className="usage-heatmap-day">{cell.dayOfMonth}</span>
+              </div>
+            ) : (
+              <div
+                key={`empty-${i}`}
+                className="usage-heatmap-cell usage-heatmap-cell-empty"
+                aria-hidden
+              />
+            ),
+          )}
+        </div>
       </div>
+
+      <table className="usage-heatmap-print" role="presentation">
+        <thead>
+          <tr>
+            {WEEKDAY_LABELS.map((d) => (
+              <th key={d} className="usage-heatmap-weekday">
+                {d}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {weeks.map((week, weekIndex) => (
+            <tr key={weekIndex}>
+              {week.map((cell, dayIndex) =>
+                cell ? (
+                  <td
+                    key={cell.date}
+                    data-intensity={cell.intensity}
+                    className={`usage-heatmap-cell rounded-sm ${HEATMAP_INTENSITY[cell.intensity]} border border-white/5`}
+                  >
+                    <span className="usage-heatmap-day">{cell.dayOfMonth}</span>
+                  </td>
+                ) : (
+                  <td
+                    key={`empty-${weekIndex}-${dayIndex}`}
+                    className="usage-heatmap-cell usage-heatmap-cell-empty"
+                    aria-hidden
+                  />
+                ),
+              )}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      {legend}
     </div>
   );
 }
@@ -220,7 +282,7 @@ export function InsightsPanel({ report, history = [] }: InsightsPanelProps) {
   const platforms = computePlatformBreakdown(report);
 
   return (
-    <section className="space-y-6">
+    <section className="print-insights print-report space-y-6">
       <header className="text-center space-y-1">
         <p className="text-wrap-500 text-xs uppercase tracking-widest font-medium">
           Smarter Insights
@@ -246,7 +308,11 @@ export function InsightsPanel({ report, history = [] }: InsightsPanelProps) {
           )}
         </InsightCard>
 
-        <InsightCard title="Usage heatmap" subtitle="Active days from message timestamps">
+        <InsightCard
+          title="Usage heatmap"
+          subtitle="Active days from message timestamps"
+          className="usage-heatmap-card"
+        >
           <UsageHeatmap report={report} />
         </InsightCard>
 

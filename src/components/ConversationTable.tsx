@@ -21,7 +21,7 @@ export function ConversationTable({ analyses }: ConversationTableProps) {
     <section className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="text-lg font-semibold text-white">Conversation breakdown</h2>
-        <label className="text-sm text-slate-400 flex items-center gap-2">
+        <label className="no-print text-sm text-slate-400 flex items-center gap-2">
           Sort by
           <select
             value={sort}

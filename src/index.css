@@ -86,14 +86,74 @@ dialog::backdrop {
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
+/* Screen: CSS grid calendar; print uses table markup instead */
+.usage-heatmap-print {
+  display: none;
+}
+
+.usage-heatmap-screen .usage-heatmap-cell {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  padding-bottom: 100%;
+}
+
+.usage-heatmap-screen .usage-heatmap-cell-empty {
+  padding-bottom: 100%;
+  border: none;
+  background: transparent;
+}
+
+.usage-heatmap-screen .usage-heatmap-day {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  line-height: 1;
+  color: #94a3b8;
+}
+
 @media print {
-  body {
-    background: white !important;
-    color: #111 !important;
+  *,
+  *::before,
+  *::after {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
 
-  header,
-  footer,
+  @page {
+    margin: 0;
+    size: letter;
+    background: #0a0a0a;
+  }
+
+  @page {
+    @bottom-center {
+      content: counter(page);
+      font-family: "Inter", system-ui, sans-serif;
+      font-size: 9pt;
+      color: #64748b;
+    }
+  }
+
+  html,
+  body,
+  #root,
+  main {
+    background: #0a0a0a !important;
+    color: #fff !important;
+  }
+
+  body {
+    min-height: auto !important;
+    padding: 0.65in 0.65in 0.85in !important;
+    box-sizing: border-box;
+  }
+
+  .site-header,
+  .site-footer,
   nav,
   .no-print {
     display: none !important;
@@ -104,21 +164,290 @@ dialog::backdrop {
     padding: 0 !important;
   }
 
-  .print-report h1,
-  .print-report p,
-  .print-report span,
-  .print-report li {
-    color: #111 !important;
+  .text-glow {
+    text-shadow: none !important;
   }
 
-  .surface-card,
-  .surface-card-alt {
-    background: #f8fafc !important;
-    border: 1px solid #e2e8f0 !important;
+  .neon-glow-hover:hover {
+    border-color: rgba(255, 255, 255, 0.1) !important;
+    box-shadow: none !important;
+  }
+
+  .surface-card {
+    background: color-mix(in srgb, var(--color-surface-800) 85%, transparent) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
     break-inside: avoid;
+  }
+
+  .surface-card-alt {
+    background: var(--color-surface-700) !important;
+    border: 1px solid rgba(255, 255, 255, 0.14) !important;
+    break-inside: avoid;
+  }
+
+  .insight-panel-card {
+    background: color-mix(in srgb, var(--color-surface-800) 70%, transparent) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    break-inside: avoid;
+  }
+
+  .print-report,
+  .print-insights,
+  .conversation-table-section {
+    color: #fff !important;
+  }
+
+  .print-report header,
+  .print-insights header {
+    display: block !important;
+  }
+
+  .print-insights .grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .print-insights .insight-panel-card {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .print-insights .insight-panel-card:nth-child(3) {
+    break-before: page;
+    page-break-before: always;
   }
 
   .conversation-table-section {
     break-before: page;
+    page-break-before: always;
+  }
+
+  .conversation-table-section table {
+    border-collapse: collapse;
+  }
+
+  .conversation-table-section thead {
+    background: rgba(255, 255, 255, 0.06) !important;
+  }
+
+  .conversation-table-section tbody tr {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .conversation-table-section th,
+  .conversation-table-section td {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+  }
+
+  .bg-white\/5,
+  .bg-white\/10 {
+    background-color: rgba(255, 255, 255, 0.06) !important;
+  }
+
+  .border-white\/5,
+  .border-white\/10 {
+    border-color: rgba(255, 255, 255, 0.12) !important;
+  }
+
+  .divide-white\/5 > :not([hidden]) ~ :not([hidden]) {
+    border-color: rgba(255, 255, 255, 0.08) !important;
+  }
+
+  .bg-wrap-500,
+  .bg-wrap-500\/80,
+  .bg-wrap-500\/70,
+  .bg-wrap-600,
+  .bg-wrap-500\/65,
+  .bg-wrap-500\/40,
+  .bg-wrap-500\/20 {
+    background-color: var(--color-wrap-500) !important;
+  }
+
+  .bg-wrap-500\/80,
+  .bg-wrap-500\/70,
+  .bg-wrap-500\/65,
+  .bg-wrap-500\/40,
+  .bg-wrap-500\/20 {
+    opacity: 1 !important;
+  }
+
+  .bg-wrap-500\/80 {
+    background-color: rgba(0, 255, 65, 0.85) !important;
+  }
+
+  .bg-wrap-500\/70 {
+    background-color: rgba(0, 255, 65, 0.75) !important;
+  }
+
+  .bg-wrap-500\/65 {
+    background-color: rgba(0, 255, 65, 0.65) !important;
+  }
+
+  .bg-wrap-500\/40 {
+    background-color: rgba(0, 255, 65, 0.4) !important;
+  }
+
+  .bg-wrap-500\/20 {
+    background-color: rgba(0, 255, 65, 0.2) !important;
+  }
+
+  .usage-heatmap-card {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  /* Print: HTML table calendar — Chrome print/PDF breaks CSS grid to one column */
+  .usage-heatmap {
+    width: 242px;
+    max-width: 242px;
+    margin-inline: auto;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .usage-heatmap-screen {
+    display: none !important;
+  }
+
+  .usage-heatmap-print {
+    display: table !important;
+    table-layout: fixed;
+    width: 242px;
+    max-width: 242px;
+    margin-inline: auto;
+    border-collapse: separate;
+    border-spacing: 3px;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .usage-heatmap-print thead,
+  .usage-heatmap-print tbody,
+  .usage-heatmap-print tr {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .usage-heatmap-print th,
+  .usage-heatmap-print td {
+    box-sizing: border-box;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    margin: 0;
+    vertical-align: middle;
+    text-align: center;
+  }
+
+  .usage-heatmap-print .usage-heatmap-weekday {
+    width: 32px;
+    height: auto;
+    font-size: 8px;
+    font-weight: 600;
+    color: #94a3b8;
+    line-height: 1.2;
+    border: none;
+    background: transparent;
+  }
+
+  .usage-heatmap-print .usage-heatmap-cell {
+    box-sizing: border-box;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    min-height: 32px;
+    max-width: 32px;
+    max-height: 32px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    overflow: hidden;
+  }
+
+  .usage-heatmap-print .usage-heatmap-cell-empty {
+    background: transparent;
+    border-color: transparent;
+  }
+
+  .usage-heatmap-print .usage-heatmap-day {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    font-size: 8px;
+    line-height: 1;
+    color: #94a3b8;
+  }
+
+  .usage-heatmap-legend {
+    display: flex !important;
+    align-items: center;
+    justify-content: space-between;
+    width: 242px;
+    max-width: 242px;
+    margin-inline: auto;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .heatmap-intensity-0,
+  .usage-heatmap-cell[data-intensity="0"] {
+    background-color: rgba(255, 255, 255, 0.08) !important;
+  }
+
+  .heatmap-intensity-1,
+  .usage-heatmap-cell[data-intensity="1"] {
+    background-color: rgba(0, 255, 65, 0.22) !important;
+  }
+
+  .heatmap-intensity-2,
+  .usage-heatmap-cell[data-intensity="2"] {
+    background-color: rgba(0, 255, 65, 0.42) !important;
+  }
+
+  .heatmap-intensity-3,
+  .usage-heatmap-cell[data-intensity="3"] {
+    background-color: rgba(0, 255, 65, 0.68) !important;
+  }
+
+  .heatmap-intensity-4,
+  .usage-heatmap-cell[data-intensity="4"] {
+    background-color: var(--color-wrap-500) !important;
+  }
+
+  .usage-heatmap-cell[data-intensity="4"] .usage-heatmap-day {
+    color: #0a0a0a !important;
+  }
+
+  .usage-heatmap-legend-swatch {
+    flex-shrink: 0;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  }
+
+  .text-wrap-400,
+  .text-wrap-500,
+  .text-brand-400 {
+    color: var(--color-wrap-400) !important;
+  }
+
+  .text-white {
+    color: #fff !important;
+  }
+
+  .text-slate-300 {
+    color: #cbd5e1 !important;
+  }
+
+  .text-slate-400,
+  .text-text-muted {
+    color: #94a3b8 !important;
+  }
+
+  .text-slate-500 {
+    color: #64748b !important;
+  }
+
+  .text-amber-400\/80 {
+    color: #fbbf24 !important;
   }
 }

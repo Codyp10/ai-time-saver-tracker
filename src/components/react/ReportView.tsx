@@ -94,28 +94,35 @@ export default function ReportView({ monthKey: monthKeyProp }: ReportViewProps) 
 
   return (
     <div className="space-y-12">
-      <div className="flex flex-wrap gap-2 justify-center no-print">
-        <button
-          type="button"
-          onClick={handleCopySummary}
-          className="min-h-11 px-4 py-2.5 rounded-full border border-white/20 text-sm text-slate-300 hover:bg-white/10"
-        >
-          {copied ? "Copied!" : "Copy summary"}
-        </button>
-        <button
-          type="button"
-          onClick={handlePrint}
-          className="min-h-11 px-4 py-2.5 rounded-full border border-white/20 text-sm text-slate-300 hover:bg-white/10"
-        >
-          Print / Save PDF
-        </button>
-        <button
-          type="button"
-          onClick={handleExport}
-          className="min-h-11 px-4 py-2.5 rounded-full border border-white/20 text-sm text-slate-300 hover:bg-white/10"
-        >
-          Export JSON
-        </button>
+      <div className="no-print space-y-3">
+        <div className="flex flex-wrap gap-2 justify-center">
+          <button
+            type="button"
+            onClick={handleCopySummary}
+            className="min-h-11 px-4 py-2.5 rounded-full border border-white/20 text-sm text-slate-300 hover:bg-white/10"
+          >
+            {copied ? "Copied!" : "Copy summary"}
+          </button>
+          <button
+            type="button"
+            onClick={handlePrint}
+            className="min-h-11 px-4 py-2.5 rounded-full border border-white/20 text-sm text-slate-300 hover:bg-white/10"
+          >
+            Print / Save PDF
+          </button>
+          <button
+            type="button"
+            onClick={handleExport}
+            className="min-h-11 px-4 py-2.5 rounded-full border border-white/20 text-sm text-slate-300 hover:bg-white/10"
+          >
+            Export JSON
+          </button>
+        </div>
+        <p className="text-center text-xs text-slate-500 max-w-lg mx-auto leading-relaxed">
+          For the best PDF: in the print dialog turn off{" "}
+          <strong className="text-slate-400">Headers and footers</strong> (removes the browser
+          date/time). Page numbers are added via print styles when your browser supports them.
+        </p>
       </div>
 
       <WrappedReport report={report} hourlyRate={hourlyRate} occupationId={occupationId} />
