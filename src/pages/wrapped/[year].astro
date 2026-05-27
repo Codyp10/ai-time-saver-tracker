@@ -1,0 +1,46 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import AnnualWrappedView from "@/components/react/AnnualWrappedView";
+import { brand } from "@/config/brand";
+
+export function getStaticPaths() {
+  const paths = [];
+  for (let year = 2018; year <= 2035; year++) {
+    paths.push({ params: { year: String(year) } });
+  }
+  return paths;
+}
+
+const rawYear = Astro.params.year;
+const year = Number(rawYear);
+const validYear = Number.isInteger(year) && year >= 2000 && year <= 2100;
+---
+
+<BaseLayout
+  title={validYear ? `${year} Wrapped — ${brand.name}` : `Annual wrap — ${brand.name}`}
+  description="Your year in AI — aggregated time saved, platform mix, and top conversations from saved monthly reports on this device."
+>
+  <meta name="robots" content="noindex, nofollow" slot="head" />
+  <header class="no-print mb-8 space-y-2">
+    <p class="text-wrap-500 text-sm uppercase tracking-widest font-medium">Annual wrap</p>
+    <h1 class="text-3xl font-bold text-white">
+      {validYear ? `${year} in AI` : "Your year in AI"}
+    </h1>
+    <p class="text-text-muted max-w-2xl">
+      Aggregated from your saved monthly wraps on this device. Upload more months anytime to fill
+      in the chart.
+    </p>
+  </header>
+  {
+    validYear ? (
+      <AnnualWrappedView client:load year={year} />
+    ) : (
+      <p class="text-slate-400">
+        Invalid year.{" "}
+        <a href="/history" class="text-wrap-500 hover:underline">
+          Open history
+        </a>
+      </p>
+    )
+  }
+</BaseLayout>

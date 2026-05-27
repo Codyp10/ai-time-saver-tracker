@@ -13,6 +13,7 @@ import {
   serializeReportForExport,
 } from "@/storage/db";
 import { formatHours } from "@/engine/aggregate";
+import { yearsWithReports } from "@/engine/annual";
 import { formatMonthLabel } from "@/utils/month";
 import { downloadReportJson } from "@/utils/shareSummary";
 
@@ -174,6 +175,20 @@ export default function HistoryView() {
       )}
 
       {reports.length >= 2 && <TrendsChart reports={reports} />}
+
+      {reports.length > 0 && (
+        <section className="flex flex-wrap gap-3">
+          {yearsWithReports(reports).map((year) => (
+            <a
+              key={year}
+              href={`/wrapped/${year}`}
+              className="min-h-11 inline-flex items-center px-5 py-2.5 rounded-full bg-wrap-500 text-black font-semibold text-sm hover:bg-white transition-colors"
+            >
+              View {year} Wrapped
+            </a>
+          ))}
+        </section>
+      )}
 
       {reports.length === 0 ? (
         <p className="text-slate-400">
