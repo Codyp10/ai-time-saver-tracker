@@ -1,7 +1,8 @@
 import { formatHours, topCategory } from "@/engine/aggregate";
 import type { AnnualReport } from "@/engine/annual";
+import { computeSuperlatives, type Superlatives } from "@/engine/superlatives";
 import type { MonthlyReport } from "@/types/conversation";
-import { formatMonthLabel } from "@/utils/month";
+import { formatMonthLabel, parseMonthKey } from "@/utils/month";
 import { brand } from "@/config/brand";
 
 const PLATFORM_LABELS: Record<string, string> = {
@@ -13,6 +14,17 @@ const PLATFORM_LABELS: Record<string, string> = {
   claude_code: "Claude Code",
 };
 
+function superlativeHighlights(superlatives: Superlatives): string {
+  const highlights: string[] = [];
+  if (superlatives.longestStreak >= 3) {
+    highlights.push(`Longest streak: ${superlatives.longestStreak} days.`);
+  }
+  if (superlatives.chronotype !== "Daytime") {
+    highlights.push(`Certified ${superlatives.chronotype}.`);
+  }
+  return highlights.slice(0, 2).join(" ");
+}
+
 export function buildShareSummary(report: MonthlyReport): string {
   const { totals } = report;
   const month = formatMonthLabel(report.monthKey);
@@ -22,8 +34,11 @@ export function buildShareSummary(report: MonthlyReport): string {
     .filter(([, mins]) => mins > 0)
     .map(([p]) => PLATFORM_LABELS[p] ?? p)
     .join(" + ");
+  const highlights = superlativeHighlights(
+    computeSuperlatives(report.analyses, parseMonthKey(report.monthKey)),
+  );
 
-  return `${brand.sharePrefix} ${month}: ~${saved} saved across ${totals.conversationCount} conversations${platforms ? ` (${platforms})` : ""}. Top task: ${top}. ${brand.shareHashtag}`;
+  return `${brand.sharePrefix} ${month}: ~${saved} saved across ${totals.conversationCount} conversations${platforms ? ` (${platforms})` : ""}. Top task: ${top}.${highlights ? ` ${highlights}` : ""} ${brand.shareHashtag}`;
 }
 
 export function buildAnnualShareSummary(annual: AnnualReport): string {

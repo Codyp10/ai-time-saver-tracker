@@ -233,7 +233,7 @@ async function parseZipFile(
   const buffer = await readArrayBufferWithLimit(file);
   onStage?.("Extracting ZIP");
   await yieldToEventLoop();
-  const entries = await extractZip(buffer);
+  const entries = await extractZip(buffer, warnings);
   let platform = detectPlatformFromEntries(entries);
 
   if (!platform) {
@@ -340,6 +340,22 @@ export function filterConversationsByMonth(
     const d = c.updatedAt;
     return d.getFullYear() === year && d.getMonth() === month - 1;
   });
+}
+
+export function listMonthsInConversations(
+  conversations: NormalizedConversation[],
+): { year: number; month: number }[] {
+  const seen = new Set<string>();
+  const months: { year: number; month: number }[] = [];
+  for (const c of conversations) {
+    const year = c.updatedAt.getFullYear();
+    const month = c.updatedAt.getMonth() + 1;
+    const key = `${year}-${month}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    months.push({ year, month });
+  }
+  return months.sort((a, b) => a.year - b.year || a.month - b.month);
 }
 
 export type MonthFilterOutcome = "empty_export" | "month_mismatch" | "matched";

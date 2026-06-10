@@ -1,4 +1,5 @@
 import initSqlJs from "sql.js";
+import sqlWasmUrl from "sql.js/dist/sql-wasm.wasm?url";
 import type { NormalizedConversation, NormalizedMessage } from "@/types/conversation";
 import { ParseError } from "./errors";
 import { epochToDate } from "./utils";
@@ -27,7 +28,7 @@ let sqlPromise: ReturnType<typeof initSqlJs> | null = null;
 async function getSql() {
   if (!sqlPromise) {
     sqlPromise = initSqlJs({
-      locateFile: (file) => `https://sql.js.org/dist/${file}`,
+      locateFile: () => sqlWasmUrl,
     });
   }
   return sqlPromise;

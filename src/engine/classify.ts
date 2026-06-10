@@ -1,4 +1,5 @@
 import type { NormalizedConversation, TaskCategory } from "@/types/conversation";
+import { TASK_TABLE } from "./taskTable";
 
 export interface ClassificationResult {
   category: TaskCategory;
@@ -71,6 +72,13 @@ export function classifyConversation(
   return { category: "other", confidence: "low" };
 }
 
+const VALID_CATEGORIES = new Set<string>(Object.keys(TASK_TABLE));
+
+export function normalizeLlmCategory(raw: string): TaskCategory | null {
+  const category = raw.trim().toLowerCase();
+  return VALID_CATEGORIES.has(category) ? (category as TaskCategory) : null;
+}
+
 export async function classifyWithLlm(
   conv: NormalizedConversation,
   apiKey: string,
@@ -103,28 +111,13 @@ export async function classifyWithLlm(
   const raw = response.choices[0]?.message?.content ?? "{}";
   try {
     const parsed = JSON.parse(raw) as { category?: string };
-    const cat = parsed.category as TaskCategory | undefined;
-    const valid = Object.keys(TASK_TABLE_PLACEHOLDER);
-    if (cat && valid.includes(cat)) {
-      return { category: cat, confidence: "high" };
+    const category =
+      typeof parsed.category === "string" ? normalizeLlmCategory(parsed.category) : null;
+    if (category) {
+      return { category, confidence: "high" };
     }
   } catch {
     /* fall through */
   }
   return classifyConversation(conv);
 }
-
-const TASK_TABLE_PLACEHOLDER = [
-  "writing",
-  "email",
-  "coding",
-  "support",
-  "analysis",
-  "translation",
-  "research",
-  "meeting_notes",
-  "brainstorm",
-  "image_gen",
-  "learning",
-  "other",
-];

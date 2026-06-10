@@ -5,7 +5,8 @@ import {
   yearsWithReports,
   type AnnualReport,
 } from "@/engine/annual";
-import { minutesToDollars, resolveHourlyRate } from "@/engine/value";
+import { computeSuperlatives } from "@/engine/superlatives";
+import { computeRoi } from "@/engine/value";
 import type { MonthlyReport } from "@/types/conversation";
 import { getSettings, listReports } from "@/storage/db";
 import { formatHourLabel, formatMonthLabel, parseMonthKey } from "@/utils/month";
@@ -26,6 +27,14 @@ const BUCKET_LABELS = {
   research: "Research",
   other: "Other",
 };
+
+function formatDayLabel(date: string): string {
+  const [y, m, d] = date.split("-").map(Number);
+  return new Date(y!, m! - 1, d!).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+  });
+}
 
 function BreakdownBars({
   title,
@@ -151,13 +160,21 @@ export default function AnnualWrappedView({ year: initialYear }: AnnualWrappedVi
     [reports, selectedYear],
   );
 
-  const rate = resolveHourlyRate(occupationId, hourlyRate);
   const monthReports = useMemo(
     () =>
       reports
         .filter((r) => parseMonthKey(r.monthKey).year === selectedYear)
         .sort((a, b) => a.monthKey.localeCompare(b.monthKey)),
     [reports, selectedYear],
+  );
+
+  const superlatives = useMemo(
+    () =>
+      computeSuperlatives(
+        monthReports.flatMap((r) => r.analyses),
+        { year: selectedYear },
+      ),
+    [monthReports, selectedYear],
   );
 
   async function handleCopySummary() {
@@ -198,7 +215,7 @@ export default function AnnualWrappedView({ year: initialYear }: AnnualWrappedVi
   }
 
   const { totals, personality } = annual;
-  const dollars = minutesToDollars(totals.minutesSaved, rate);
+  const roi = computeRoi(totals, occupationId, hourlyRate);
   const books = Math.round(totals.minutesSaved / 60 / HOURS_PER_BOOK);
   const top = topCategory(totals.byCategory);
   const platformEntries = Object.entries(totals.byPlatform).map(([p, mins]) => [
@@ -297,8 +314,9 @@ export default function AnnualWrappedView({ year: initialYear }: AnnualWrappedVi
             {formatHours(totals.minutesSaved)} saved
           </h1>
           <p className="text-slate-400">
-            ≈ ${dollars.toLocaleString()} at ${rate}/hr · Based on {annual.monthsIncluded} of 12
-            months
+            ≈ ${roi.dollarsSaved.toLocaleString()} at ${roi.hourlyRate}/hr
+            {roi.roiRatio !== null && <> · {roi.roiRatio.toFixed(1)}x return on time spent</>} ·
+            Based on {annual.monthsIncluded} of 12 months
           </p>
           {annual.monthsMissing > 0 && (
             <p className="text-sm text-slate-500">
@@ -317,6 +335,41 @@ export default function AnnualWrappedView({ year: initialYear }: AnnualWrappedVi
             </article>
           ))}
         </div>
+
+        {superlatives.activeDays > 0 && (
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {[
+              {
+                label: "Active days",
+                value: String(superlatives.activeDays),
+                sub: `with AI activity in ${selectedYear}`,
+              },
+              {
+                label: "Longest streak",
+                value: `${superlatives.longestStreak} day${superlatives.longestStreak === 1 ? "" : "s"}`,
+                sub: "in a row",
+              },
+              ...(superlatives.biggestDay
+                ? [
+                    {
+                      label: "Biggest day",
+                      value: formatHours(superlatives.biggestDay.minutesSaved),
+                      sub: formatDayLabel(superlatives.biggestDay.date),
+                    },
+                  ]
+                : []),
+            ].map((chip) => (
+              <article
+                key={chip.label}
+                className="insight-panel-card rounded-xl border border-white/10 bg-white/5 p-4 text-center"
+              >
+                <p className="text-[10px] uppercase tracking-wide text-slate-500">{chip.label}</p>
+                <p className="text-lg font-bold text-wrap-500 mt-1">{chip.value}</p>
+                <p className="text-[10px] text-slate-500 mt-1">{chip.sub}</p>
+              </article>
+            ))}
+          </div>
+        )}
 
         <YearBarChart annual={annual} />
 

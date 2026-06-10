@@ -9,13 +9,16 @@ export const brand = {
   heroHeadline: "Your AI month, wrapped.",
   heroSubcopy:
     "Upload your chat exports. See how much time AI saved you. Free, private, and runs entirely in your browser.",
-  heroTrustLine: ["Free", "No signup", "Local-only"] as const,
+  heroTrustLine: "Free · No signup · Your exports are never sent to our servers",
   howItWorks: [
     "Export your chats from ChatGPT, Claude, Cursor, and more.",
     "Drop files here — parsed locally, never uploaded.",
     "Get your wrap with time saved and breakdowns.",
   ] as const,
-  privacyLine: "Free. No account. Your files never leave your browser.",
+  privacyLine:
+    "Free. No account. Your chats and exports are never sent to our servers — we have no servers. Parsing and analysis run entirely in your browser.",
+  analyticsDisclosure:
+    "We use anonymous page-view analytics (Google Tag Manager); your uploaded data is never sent to our servers. Optional OpenAI classification is opt-in and uses your own API key, sent directly from your browser to OpenAI.",
   platformsLine:
     "Works with ChatGPT, Claude, Grok, Gemini, Claude Code, and Cursor.",
   samplePreview: {

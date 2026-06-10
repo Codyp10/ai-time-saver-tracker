@@ -1,6 +1,6 @@
 # AI Wrapped
 
-> Privacy-first monthly wrap of your AI usage. Upload chat exports from ChatGPT, Claude, Grok, Gemini, Claude Code, and Cursor to see estimated time spent and time saved. Everything runs in the browser — files never leave your device.
+> Privacy-first monthly wrap of your AI usage. Upload chat exports from ChatGPT, Claude, Grok, Gemini, Claude Code, and Cursor to see estimated time spent and time saved. Parsing runs entirely in the browser — files are never sent to our servers.
 
 ## What it does
 
@@ -22,9 +22,10 @@ AI Wrapped parses AI chat export files locally in the user's browser and generat
 ## Key properties
 
 - Free to use, no signup required
-- All parsing happens client-side in the browser
-- No files are uploaded to any server
-- No account, no tracking of chat content
+- Chats and exports are never sent to our servers — there are no servers; parsing and analysis are 100% client-side
+- No files are uploaded — everything is processed locally in the browser
+- No account; anonymous page-view analytics (Google Tag Manager) only — uploaded data is never sent to our servers
+- Optional LLM classification is opt-in: conversation snippets go directly from the browser to OpenAI using the user's own API key
 
 ## Pages
 

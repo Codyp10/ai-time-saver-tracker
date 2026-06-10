@@ -1,8 +1,9 @@
 import type { MonthlyReport } from "@/types/conversation";
 import { formatHours, HOURS_PER_BOOK, topCategory } from "@/engine/aggregate";
+import { computeSuperlatives } from "@/engine/superlatives";
 import { TASK_TABLE } from "@/engine/taskTable";
-import { formatHourLabel, formatMonthLabel } from "@/utils/month";
-import { minutesToDollars, resolveHourlyRate } from "@/engine/value";
+import { formatHourLabel, formatMonthLabel, parseMonthKey } from "@/utils/month";
+import { computeRoi } from "@/engine/value";
 
 const PLATFORM_LABELS: Record<string, string> = {
   chatgpt: "ChatGPT",
@@ -58,6 +59,18 @@ function BreakdownBars({
   );
 }
 
+function formatSignedHours(minutes: number): string {
+  return `${minutes < 0 ? "−" : "+"}${formatHours(Math.abs(minutes))}`;
+}
+
+function formatDayLabel(date: string): string {
+  const [y, m, d] = date.split("-").map(Number);
+  return new Date(y!, m! - 1, d!).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+  });
+}
+
 interface WrappedReportProps {
   report: MonthlyReport;
   hourlyRate?: number;
@@ -68,8 +81,8 @@ export function WrappedReport({ report, hourlyRate, occupationId }: WrappedRepor
   const { totals } = report;
   const top = topCategory(totals.byCategory);
   const topStudy = TASK_TABLE[top].study;
-  const rate = resolveHourlyRate(occupationId, hourlyRate);
-  const dollars = minutesToDollars(totals.minutesSaved, rate);
+  const roi = computeRoi(totals, occupationId, hourlyRate);
+  const superlatives = computeSuperlatives(report.analyses, parseMonthKey(report.monthKey));
   const books = Math.round(totals.minutesSaved / 60 / HOURS_PER_BOOK);
 
   const modelEntries = Object.entries(totals.byModel).sort((a, b) => b[1] - a[1]);
@@ -136,12 +149,34 @@ export function WrappedReport({ report, hourlyRate, occupationId }: WrappedRepor
           {formatHours(totals.minutesSaved)} saved
         </h1>
         <p className="text-slate-400">
-          ≈ ${dollars.toLocaleString()} at ${rate}/hr · Skill: {report.skillLevel.replace("_", " ")}
+          ≈ ${roi.dollarsSaved.toLocaleString()} at ${roi.hourlyRate}/hr · Skill:{" "}
+          {report.skillLevel.replace("_", " ")}
           {report.quizProfile && (
             <> · {report.quizProfile.primaryUse} focus</>
           )}
         </p>
       </header>
+
+      <div className="insight-panel-card rounded-2xl border border-wrap-500/40 surface-card-alt p-6 text-center space-y-3 neon-glow-hover">
+        <p className="text-xs text-wrap-500 uppercase tracking-widest font-medium">Net ROI</p>
+        <p className="text-2xl sm:text-3xl font-extrabold text-white">
+          {roi.roiRatio !== null ? (
+            <>
+              For every hour you spent, you got{" "}
+              <span className="text-wrap-500 text-glow">{roi.roiRatio.toFixed(1)} hrs</span> back
+            </>
+          ) : (
+            <>All upside — no measurable time spent</>
+          )}
+        </p>
+        <p className="text-slate-300 text-sm">
+          Net {formatSignedHours(roi.netMinutesSaved)} · ≈ $
+          {roi.dollarsSaved.toLocaleString()} of your time at ${roi.hourlyRate}/hr
+        </p>
+        <p className="text-slate-400 text-xs">
+          Range: ${roi.dollarsSavedLow.toLocaleString()} – ${roi.dollarsSavedHigh.toLocaleString()}
+        </p>
+      </div>
 
       <div className="grid sm:grid-cols-2 gap-4">
         {cards.map((card) => (
@@ -155,6 +190,51 @@ export function WrappedReport({ report, hourlyRate, occupationId }: WrappedRepor
           </article>
         ))}
       </div>
+
+      {superlatives.activeDays > 0 && (
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+          {[
+            {
+              label: "Active days",
+              value: String(superlatives.activeDays),
+              sub: "with AI activity",
+            },
+            {
+              label: "Longest streak",
+              value: `${superlatives.longestStreak} day${superlatives.longestStreak === 1 ? "" : "s"}`,
+              sub: "in a row",
+            },
+            ...(superlatives.biggestDay
+              ? [
+                  {
+                    label: "Biggest day",
+                    value: formatHours(superlatives.biggestDay.minutesSaved),
+                    sub: formatDayLabel(superlatives.biggestDay.date),
+                  },
+                ]
+              : []),
+            {
+              label: "After hours",
+              value: `${superlatives.afterHoursPct}%`,
+              sub: "outside 8am–6pm",
+            },
+            {
+              label: "Chronotype",
+              value: superlatives.chronotype,
+              sub: "from message times",
+            },
+          ].map((chip) => (
+            <article
+              key={chip.label}
+              className="insight-panel-card rounded-xl border border-white/10 bg-white/5 p-4 text-center"
+            >
+              <p className="text-[10px] uppercase tracking-wide text-slate-500">{chip.label}</p>
+              <p className="text-lg font-bold text-wrap-500 mt-1">{chip.value}</p>
+              <p className="text-[10px] text-slate-500 mt-1">{chip.sub}</p>
+            </article>
+          ))}
+        </div>
+      )}
 
       <div className="grid sm:grid-cols-2 gap-4">
         <BreakdownBars

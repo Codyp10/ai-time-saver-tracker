@@ -27,3 +27,39 @@ export function resolveHourlyRate(
   const occ = OCCUPATIONS.find((o) => o.id === occupationId);
   return occ?.hourlyUsd ?? 35;
 }
+
+export interface RoiTotals {
+  minutesSaved: number;
+  minutesSpent: number;
+  minutesSavedLow?: number;
+  minutesSavedHigh?: number;
+}
+
+export interface RoiStats {
+  netMinutesSaved: number;
+  roiRatio: number | null;
+  hourlyRate: number;
+  dollarsSaved: number;
+  dollarsSavedLow: number;
+  dollarsSavedHigh: number;
+}
+
+export function computeRoi(
+  totals: RoiTotals,
+  occupationId?: string,
+  hourlyRateOverride?: number,
+): RoiStats {
+  const hourlyRate = resolveHourlyRate(occupationId, hourlyRateOverride);
+  const roiRatio =
+    totals.minutesSpent > 0
+      ? Math.round((totals.minutesSaved / totals.minutesSpent) * 10) / 10
+      : null;
+  return {
+    netMinutesSaved: Math.round(totals.minutesSaved - totals.minutesSpent),
+    roiRatio,
+    hourlyRate,
+    dollarsSaved: minutesToDollars(totals.minutesSaved, hourlyRate),
+    dollarsSavedLow: minutesToDollars(totals.minutesSavedLow ?? totals.minutesSaved, hourlyRate),
+    dollarsSavedHigh: minutesToDollars(totals.minutesSavedHigh ?? totals.minutesSaved, hourlyRate),
+  };
+}

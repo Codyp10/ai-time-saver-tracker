@@ -6,10 +6,11 @@ Built with [Astro](https://astro.build/) for HTML-first pages. Marketing content
 
 ## Privacy
 
-- **No backend.** Your chat exports are never uploaded to any server.
+- **No backend.** Your chats and exports are never sent to our servers — we have no servers. Parsing and analysis are 100% client-side.
 - Parsing, classification, and calculations run locally in the browser.
 - Reports are stored in **IndexedDB** on your device only.
-- Optional OpenAI API key (for better classification) stays in local storage and calls OpenAI directly from your browser if you enable it.
+- We use anonymous page-view analytics (Google Tag Manager); your uploaded data is never sent to our servers.
+- Optional OpenAI API key (for better classification) stays in local storage; if you enable it, conversation snippets are sent directly from your browser to OpenAI using your own key.
 
 ## Supported platforms
 

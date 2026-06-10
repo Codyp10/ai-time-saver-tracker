@@ -4,13 +4,15 @@ import { epochToDate, extractTextFromParts } from "./utils";
 
 interface ChatGPTMappingNode {
   id?: string;
+  parent?: string | null;
+  children?: string[];
   message?: {
     id?: string;
     author?: { role?: string };
     create_time?: number;
     content?: { parts?: unknown };
     metadata?: { model_slug?: string };
-  };
+  } | null;
 }
 
 interface ChatGPTConversation {
@@ -18,6 +20,7 @@ interface ChatGPTConversation {
   title?: string;
   create_time?: number;
   update_time?: number;
+  current_node?: string;
   mapping?: Record<string, ChatGPTMappingNode>;
 }
 
@@ -34,14 +37,69 @@ export function parseChatGPTExport(json: unknown): NormalizedConversation[] {
     .filter((c): c is NormalizedConversation => c !== null);
 }
 
+function flattenedNodes(
+  mapping: Record<string, ChatGPTMappingNode>,
+): ChatGPTMappingNode[] {
+  return Object.values(mapping)
+    .filter((n) => n.message?.author?.role)
+    .sort((a, b) => (a.message?.create_time ?? 0) - (b.message?.create_time ?? 0));
+}
+
+function findMostRecentLeaf(
+  mapping: Record<string, ChatGPTMappingNode>,
+): string | null {
+  const referencedParents = new Set<string>();
+  for (const node of Object.values(mapping)) {
+    if (typeof node.parent === "string") referencedParents.add(node.parent);
+  }
+
+  let leaves = Object.keys(mapping).filter((id) => !referencedParents.has(id));
+  if (leaves.length === 0) leaves = Object.keys(mapping);
+
+  let best: string | null = null;
+  let bestTime = -Infinity;
+  for (const id of leaves) {
+    const t = mapping[id]?.message?.create_time ?? 0;
+    if (t > bestTime) {
+      bestTime = t;
+      best = id;
+    }
+  }
+  return best;
+}
+
+/** Walk the active branch (current_node → root) so regenerated/edited siblings are not counted. */
+function activeBranchNodes(
+  mapping: Record<string, ChatGPTMappingNode>,
+  currentNode: string | undefined,
+): ChatGPTMappingNode[] {
+  const hasParentLinks = Object.values(mapping).some(
+    (n) => typeof n.parent === "string",
+  );
+  if (!hasParentLinks) return flattenedNodes(mapping);
+
+  const startId =
+    currentNode && mapping[currentNode] ? currentNode : findMostRecentLeaf(mapping);
+  if (!startId) return flattenedNodes(mapping);
+
+  const path: ChatGPTMappingNode[] = [];
+  const visited = new Set<string>();
+  let cursor: string | null | undefined = startId;
+  while (cursor && mapping[cursor] && !visited.has(cursor)) {
+    visited.add(cursor);
+    path.push(mapping[cursor]!);
+    cursor = mapping[cursor]!.parent;
+  }
+  path.reverse();
+  return path;
+}
+
 function parseConversation(raw: ChatGPTConversation): NormalizedConversation | null {
   const id = raw.id ?? crypto.randomUUID();
   const messages: NormalizedMessage[] = [];
 
   if (raw.mapping) {
-    const nodes = Object.values(raw.mapping)
-      .filter((n) => n.message?.author?.role)
-      .sort((a, b) => (a.message?.create_time ?? 0) - (b.message?.create_time ?? 0));
+    const nodes = activeBranchNodes(raw.mapping, raw.current_node);
 
     for (const node of nodes) {
       const msg = node.message;

@@ -22,6 +22,15 @@ export default defineConfig({
         "@": path.resolve(__dirname, "./src"),
       },
     },
+    worker: {
+      rollupOptions: {
+        output: {
+          // Match Astro's client asset naming so assets shared between the
+          // worker and client bundles (sql.js wasm) dedupe to one file.
+          assetFileNames: "_astro/[name].[hash][extname]",
+        },
+      },
+    },
   },
   output: "static",
 });
